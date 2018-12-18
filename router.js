@@ -5,7 +5,7 @@ const passport = require('passport');
 const requireAuth = passport.authenticate('jwt',{session:false});
 const requireSignIn = passport.authenticate('local',{session:false});
 const images = require('./controllers/images');
-const fossils = require('./routes/fossildata');
+const fossils = require('./controllers/fossildata');
 module.exports = function (app) {
    app.post('/signup',authentication.signup);
    app.post('/signin',requireSignIn, authentication.signin);
@@ -13,4 +13,6 @@ module.exports = function (app) {
    app.get('/puppy',images.getImages);
    app.get('/fossils/elephant',fossils.elephantData);
    app.get('/elephant',fossils.allElephant);
+   app.get('/fossils/reds',fossils.redData);
+   app.get('/red', fossils.allRed);
 }
