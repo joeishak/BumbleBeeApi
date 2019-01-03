@@ -15,4 +15,19 @@ module.exports = function (app) {
    app.get('/elephant',fossils.allElephant);
    app.get('/fossils/reds',fossils.redData);
    app.get('/red', fossils.allRed);
+
+   app.get('/weight/total', fossils.totalWeightPerFabric);
+   app.get('/weight/count', fossils.countOfWeightPerFabric);
+   app.get('/percent/diagnostics', fossils.percentOfDiagnostics);
+
+   app.get('/percent/blackened/ext', fossils.percentOfFireBlackenedExt);
+   app.get('/weight/blackened/total/ext', fossils.countOfFireBlackenedExt);
+
+   app.get('/percent/blackened/int', fossils.percentOfFireBlackenedInt);
+   app.get('/weight/blackened/total/int', fossils.countOfFireBlackenedInt);
+
+
+   app.get('/percent/blackened/both', fossils.percentOfFireBlackenedIntExt);
+   app.get('/weight/blackened/total/both', fossils.countOfFireBlackenedIntExt);
+
 }
