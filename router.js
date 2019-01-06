@@ -16,8 +16,11 @@ module.exports = function (app) {
    app.get('/fossils/reds',fossils.redData);
    app.get('/red', fossils.allRed);
 
+   //Refactored totalweightperfabric and countofweightperfabric into totalWeightCountPerFabric
    app.get('/weight/total', fossils.totalWeightPerFabric);
    app.get('/weight/count', fossils.countOfWeightPerFabric);
+   app.get('/dash/panel1',fossils.totalWeightCountPerFabric);
+
    app.get('/percent/diagnostics', fossils.percentOfDiagnostics);
 
    app.get('/percent/blackened/ext', fossils.percentOfFireBlackenedExt);
@@ -30,4 +33,5 @@ module.exports = function (app) {
    app.get('/percent/blackened/both', fossils.percentOfFireBlackenedIntExt);
    app.get('/weight/blackened/total/both', fossils.countOfFireBlackenedIntExt);
 
+   
 }

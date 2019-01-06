@@ -7,7 +7,7 @@ let Elephants =require('../models/Elephant.js');
 let mySql                       = require('mySql');
 let elephantData = require('../elephant');
 let redData = require('../reds');
-
+let _ = require('lodash');
 var config =
    {
      user: "sa",
@@ -64,6 +64,85 @@ exports.totalWeightPerFabric = (req,res) => {
         res.send(response);
     })
 }
+//1.5 Total Percentage and Weight Percentage 
+exports.totalWeightCountPerFabric = (req,res) => {
+    pool.query(`select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  ,Round(( sum(weight) / (select sum(weight) from egypt.elephant) ),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err,response,fields) => {
+        let categorized, grouped, accumulated = [];
+        const marl = 'Marl';
+        const ns1 = 'NS I';
+        const ns2 = 'NS II';
+        const ns3 = 'NS III';
+        const ns5 = 'NS V';
+        const other  = 'Other';
+        //Categorize fabrics into 6 Categories and assign them to newResponse
+        categorized = response.map(item=>{
+            switch(item.fabric){
+                case 'M I':
+                item.fabric = marl;
+                break;
+                case 'M II':
+                item.fabric = marl;
+                break;  
+                case 'M III':
+                item.fabric = marl;
+                break; 
+                case 'M IV':
+                item.fabric = marl;
+                break; 
+                case 'M other':
+                item.fabric = marl;
+                break; 
+                case 'NS I':
+                item.fabric = ns1;
+                break; 
+                case 'NS I.b':
+                item.fabric = ns1;
+                break;
+                case 'NS I.s':
+                item.fabric = ns1;
+                break;  
+                case 'NS I.v':
+                item.fabric = ns1;
+                break; 
+                case 'NS II':
+                item.fabric = ns2;
+                break; 
+                case 'NS II+':
+                item.fabric = ns2;
+                break; 
+                case 'NS III':
+                item.fabric = ns3;
+                break; 
+                case 'NS V':
+                item.fabric = ns5;
+                break; 
+                default:
+                item.fabric = 'Empty';
+                break;
+            }
+            return item;
+        })
+        //Group the categorized array by fabrics
+         grouped = _.groupBy(categorized,(o)=>{return o.fabric})
+        // for each Key in the Object
+        for(let i = 0 ; i < _.keys(grouped).length ; i ++){
+            let newItem;
+            let key = _.keys(grouped)[i];
+
+            // create a new object with properties type, weight, count
+            newItem= {
+                type:key,
+                weight: _.sumBy(grouped[key],(o)=>{return o.weightPercent}),
+                count: _.sumBy(grouped[key],(o)=>{return o.totalPercent}),
+            }
+            // add that item to the accumulated array 
+            accumulated[i] = newItem;
+        }
+        //return the accumulated array to client
+        res.send(accumulated);
+    });
+}
+
 // -- 2 Count of records grouped by fabric type
 exports.countOfWeightPerFabric = (req,res,next) => {
     pool.query(`select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err,response,fields) => {
