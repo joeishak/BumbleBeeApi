@@ -26,7 +26,11 @@ module.exports = function (app) {
 
    app.get('/percent/blackened/ext', fossils.percentOfFireBlackenedExt);
    app.get('/weight/blackened/total/ext', fossils.countOfFireBlackenedExt);
-   app.get('/dash/panel2',fossils.percentOfFabricTotalBlackened);
+   app.get('/dash/panel2/count',fossils.percentOfFabricTotalBlackened);
+   app.get('/dash/panel2/weight',fossils.percentOfFabricWeightBlackened);
+
+
+   
    app.get('/percent/blackened/int', fossils.percentOfFireBlackenedInt);
    app.get('/weight/blackened/total/int', fossils.countOfFireBlackenedInt);
 
