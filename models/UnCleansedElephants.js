@@ -1,4 +1,4 @@
-module.exports = class Elephants {
+module.exports = class UnCleansedElephants {
     constructor(obj){
         // console.log(obj);
         this.locusNum           = (obj["locus no"] ==="")? null:obj["locus no"] ,

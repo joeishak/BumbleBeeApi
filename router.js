@@ -21,11 +21,12 @@ module.exports = function (app) {
    app.get('/weight/count', fossils.countOfWeightPerFabric);
    app.get('/dash/panel1',fossils.totalWeightCountPerFabric);
 
+   
    app.get('/percent/diagnostics', fossils.percentOfDiagnostics);
 
    app.get('/percent/blackened/ext', fossils.percentOfFireBlackenedExt);
    app.get('/weight/blackened/total/ext', fossils.countOfFireBlackenedExt);
-
+   app.get('/dash/panel2',fossils.percentOfFabricTotalBlackened);
    app.get('/percent/blackened/int', fossils.percentOfFireBlackenedInt);
    app.get('/weight/blackened/total/int', fossils.countOfFireBlackenedInt);
 
