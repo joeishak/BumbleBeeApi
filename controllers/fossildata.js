@@ -60,13 +60,8 @@ exports.allRed = (req, res, next) => {
     });
 };
 
-// -- 1 Total Weight per fabric type
-exports.totalWeightPerFabric = (req, res) => {
-    pool.query(`select fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
-        res.send(response);
-    })
-}
-//1.5 Total Percentage and Weight Percentage 
+
+//Panel 1 Total Percentage and Weight Percentage 
 exports.totalWeightCountPerFabric = (req, res) => {
     pool.query(`select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  ,Round(( sum(weight) / (select sum(weight) from egypt.elephant) ),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
         // const marl = 'Marl';
@@ -102,26 +97,9 @@ exports.totalWeightCountPerFabric = (req, res) => {
         } else {
             res.status(404).send('Resource not found');
         }
-
     });
 }
-
-// -- 2 Count of records grouped by fabric type
-exports.countOfWeightPerFabric = (req, res, next) => {
-    pool.query(`select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
-        res.send(response);
-    })
-}
-
-// --3 Percent of Diagnostics
-exports.percentOfDiagnostics = (req, res, next) => {
-    pool.query(`select distinct typedescription, Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by typedescription order by 2 desc;`, (err, response, fields) => {
-        res.send(response);
-    })
-}
-
-
-// 4, 5, 6, 7, 8 & 9 Count for Panel 2
+// 4, 5, 6, 7, 8 & 9 Count for Panel 2 A
 exports.percentOfFabricTotalBlackened = (req, res, next) => {
     let intArr, extArr, nullArr, bothArr = [];
     pool.query(`select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;`, (err, response, fields) => {
@@ -186,7 +164,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
     })
 }
 
-// 4, 5, 6, 7, 8 & 9 Weight for Panel 2
+// 4, 5, 6, 7, 8 & 9 Weight for Panel 2 B
 exports.percentOfFabricWeightBlackened = (req, res, next) => {
     let intArr, extArr, nullArr, bothArr = [];
     pool.query(`select  blackened, fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;`, (err, response, fields) => {
@@ -250,12 +228,117 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
         }
     })
 }
+
+// Panel 3 Proportion of count by type
+exports.totalCountPerType = (req, res) => {
+    pool.query(`select distinct typedescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) * 100),2) as 'countPercent' from egypt.elephant group by  typedescription order by 2 desc;`, (err, response, fields) => {
+        let bodySherds = _.groupBy(response,(o)=>{if(o.type==='body sherds' || o.type==='body sherd'){return 'sherds'}});
+        let rim = _.groupBy(response,(o)=>{if(o.type==='rims tstc' ){return 'rimtstc'}});
+        let hem = _.groupBy(response,(o)=>{if(o.type==='hem cup' || o.type==='hem cups'){return 'hemcups'}});
+        let flattened  = _.groupBy(response,(o)=>{if(o.type==='flattened base'){return 'flatenedbase'}});
+
+        let bodySum = _.sumBy(bodySherds.sherds, (o)=> {return o.countPercent});
+        let rimSum = _.sumBy(rim.rimtstc, (o)=> {return o.countPercent});
+        let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.countPercent});
+        let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.countPercent});
+
+        console.log(bodySum);
+        let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
+        let otherSum = 100 - totalDefinedSum;
+        let model = [{
+            stat: 'Body Sherds ',
+            count: bodySum,
+            color: '#0e5a7e'
+          }, {
+            stat: 'Rim Tstc',
+            count: rimSum,
+            color: '#166f99'
+          }, {
+            stat: 'Hem Cups ',
+            count: hemSum,
+            color: '#2185b4'
+          }, {
+            stat: 'Flattened Base',
+            count: flattenedSum,
+            color: '#319fd2'
+          }, {
+            stat: 'Other',
+            count: otherSum,
+            color: '#3eaee2'
+          }];
+          let newarr = _.sortBy(model, (o)=>{return o.count});
+        res.send(newarr.reverse());
+    })
+}
+// Panel 3 Proportion of count by type
+exports.totalWeightPerType = (req, res) => {
+    pool.query(`select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent' from egypt.elephant group by  typedescription order by 2 desc;`, (err, response, fields) => {
+        let bodySherds = _.groupBy(response,(o)=>{if(o.type==='body sherds' || o.type==='body sherd'){return 'sherds'}});
+        let rim = _.groupBy(response,(o)=>{if(o.type==='rims tstc' ){return 'rimtstc'}});
+        let hem = _.groupBy(response,(o)=>{if(o.type==='hem cup' || o.type==='hem cups'){return 'hemcups'}});
+        let flattened  = _.groupBy(response,(o)=>{if(o.type==='flattened base'){return 'flatenedbase'}});
+
+        let bodySum = _.sumBy(bodySherds.sherds, (o)=> {return o.weightPercent});
+        let rimSum = _.sumBy(rim.rimtstc, (o)=> {return o.weightPercent});
+        let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.weightPercent});
+        let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.weightPercent});
+
+        console.log(bodySum);
+        let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
+        let otherSum = 100 - totalDefinedSum;
+        let model = [{
+            stat: 'Body Sherds ',
+            count: bodySum,
+            color: '#0e5a7e'
+          }, {
+            stat: 'Rim Tstc',
+            count: rimSum,
+            color: '#166f99'
+          }, {
+            stat: 'Hem Cups ',
+            count: hemSum,
+            color: '#2185b4'
+          }, {
+            stat: 'Flattened Base',
+            count: flattenedSum,
+            color: '#319fd2'
+          }, {
+            stat: 'Other',
+            count: otherSum,
+            color: '#3eaee2'
+          }];
+          let newarr = _.sortBy(model, (o)=>{return o.count});
+        res.send(newarr.reverse());
+    })
+}
+// -- 1 Total Weight per fabric type
+exports.totalWeightPerFabric = (req, res) => {
+    pool.query(`select fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
+        res.send(response);
+    })
+}
+
+// -- 2 Count of records grouped by fabric type
+exports.countOfWeightPerFabric = (req, res, next) => {
+    pool.query(`select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
+        res.send(response);
+    })
+}
+
+// --3 Percent of Diagnostics
+exports.percentOfDiagnostics = (req, res, next) => {
+    pool.query(`select distinct typedescription, Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by typedescription order by 2 desc;`, (err, response, fields) => {
+        res.send(response);
+    })
+}
+
 //  -- 4 & 5 Percentage of a corpus within a given context that is fire-black on exterior.
 exports.percentOfFireBlackenedExt = (req, res, next) => {
     pool.query(`select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'percent'  from egypt.elephant where blackened like 'ext' group by blackened,fabric order by 2 desc;`, (err, response, fields) => {
         res.send(response);
     })
 }
+
 // -- 4 & 5  Percentage of a corpus within a given context that is fire-black on exterior.
 exports.countOfFireBlackenedExt = (req, res, next) => {
     pool.query(`select  blackened,fabric, Round(( sum(weight) / (select sum(weight)from egypt.elephant) * 100),2) as 'percent'  from egypt.elephant where blackened like 'ext' group by blackened,fabric order by 2 desc;`, (err, response, fields) => {
@@ -269,6 +352,7 @@ exports.percentOfFireBlackenedInt = (req, res, next) => {
         res.send(response);
     })
 }
+
 // -- 6 & 7  Percentage of a corpus within a given context that is fire-black on exterior.
 exports.countOfFireBlackenedInt = (req, res, next) => {
     pool.query(`select  blackened,fabric, Round(( sum(weight) / (select sum(weight)from egypt.elephant) * 100),2) as 'percent'  from egypt.elephant where blackened like 'int' group by blackened,fabric order by 2 desc;`, (err, response, fields) => {
@@ -282,6 +366,7 @@ exports.percentOfFireBlackenedIntExt = (req, res, next) => {
         res.send(response);
     })
 }
+
 // -- 8. & 9
 exports.countOfFireBlackenedIntExt = (req, res, next) => {
     pool.query(`select  blackened,fabric, Round(( sum(weight) / (select sum(weight)from egypt.elephant) * 100),2) as 'percent'  from egypt.elephant where blackened like 'int/ext' group by blackened,fabric order by 2 desc;`, (err, response, fields) => {
