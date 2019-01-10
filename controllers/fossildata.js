@@ -379,6 +379,10 @@ exports.postRequestTest = (req,res,next) =>{
     res.send({message: 'successfull', request: req.body})
 }
 
+exports.heartbeat = (req,res,next) => {
+    res.send({message: 'connected'});
+}
+
 
 
 

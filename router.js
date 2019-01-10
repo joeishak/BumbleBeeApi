@@ -39,5 +39,6 @@ module.exports = function (app) {
        app.get('/percent/blackened/both', fossils.percentOfFireBlackenedIntExt);
        app.get('/weight/blackened/total/both', fossils.countOfFireBlackenedIntExt);
        app.post('/test', fossils.postRequestTest)
+       app.get('/heartbeat', fossils.heartbeat)
 
 }
