@@ -279,3 +279,19 @@ exports.totalWeightPerFabric = (req, res) => {
         res.send(response);
     })
 }
+
+
+exports.locusLatLangs = (req,res) =>{
+    let sql = 'Select distinct lat, lang from egypt.elephant';
+    pool.query(sql, (err, response, fields) => {
+        res.send(response);
+    })
+}
+
+
+exports.percentOfFabricTotalBlackenedByLocusGroup = (req,res) =>{
+    let sql = "select  lat,lang, blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant  group by lat,lang,blackened,fabric order by 1,2 asc;";
+    pool.query(sql, (err, response, fields) => {
+        res.send(response);
+    })
+}
