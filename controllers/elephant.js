@@ -280,10 +280,32 @@ exports.totalWeightPerFabric = (req, res) => {
     })
 }
 
+const getListOfLocus = (list) => {
+    let oldText, concatText, newText; 
 
+    for(let i = 0; i < list.length; i++){
+        let item = list[i];
+        newText = parseInt(item.text);
+        if(oldText){
+            concatText = `${concatText}, '${newText}'`
+        }
+        else{
+            concatText = `'${newText}'`
+        }
+
+        oldText = newText;
+    }
+    console.log(concatText)
+    return concatText;
+}
 exports.locusLatLangs = (req,res) =>{
-    let sql = 'Select distinct lat, lang from egypt.elephant';
+    console.log(req.body);
+    let inArray = req.body.map(item=>{
+        return item.text;
+    })
+    let sql = "Select distinct left(locusNum,5) 'locusgroup', lat, lang from egypt.elephant where left(locusNum,5) in ("+getListOfLocus(req.body) +");" ;
     pool.query(sql, (err, response, fields) => {
+        console.log(response);
         res.send(response);
     })
 }

@@ -29,7 +29,7 @@ module.exports = function (app) {
        app.get('/dash/panel2/weight', elephant.percentOfFabricWeightBlackened);
        app.get('/dash/panel3/count', elephant.totalCountPerType);
        app.get('/dash/panel3/weight', elephant.totalWeightPerType);
-       app.get('/dash/latlang',elephant.locusLatLangs);
+       app.post('/dash/latlang',elephant.locusLatLangs);
        app.get('/dash/blackenedlatlang',elephant.percentOfFabricTotalBlackenedByLocusGroup);
 
        app.post('/test', healthy.postRequestTest)
