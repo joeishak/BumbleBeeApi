@@ -22,6 +22,11 @@ pool.connect(err => {
     else console.log('success');
 })
 
+exports.postRequestTest = (req,res,next) =>{
+    console.log('Request', req.body);
+    res.send({message: 'successfull', request: req.body})
+}
+
 
 
 

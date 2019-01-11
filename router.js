@@ -6,6 +6,7 @@ const requireAuth = passport.authenticate('jwt', { session: false });
 const requireSignIn = passport.authenticate('local', { session: false });
 const images = require('./controllers/images');
 const etl = require('./controllers/etl');
+const etl = require('./controllers/healthy');
 const elephant = require('./controllers/elephant');
 const red = require('./controllers/red');
 
@@ -29,5 +30,6 @@ module.exports = function (app) {
        app.get('/dash/panel3/count', elephant.totalCountPerType);
        app.get('/dash/panel3/weight', elephant.totalWeightPerType);
 
+       app.post('/test', healthy.postRequestTest)
 
 }
