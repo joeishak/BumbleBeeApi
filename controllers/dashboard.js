@@ -20,14 +20,14 @@ pool.connect(err => {
 })
 
 exports.allElephant = (req, res, next) => {
-    pool.query('select * from egypt.elephantine;', (err, response, fields) => {
+    pool.query("select * from egypt.elephantine where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +");", (err, response, fields) => {
         res.send(response);
     });
 };
 
 //Panel 1 Total Percentage and Weight Percentage 
 exports.totalWeightCountPerFabric = (req, res) => {
-    pool.query(`select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  ,Round(( sum(weight) / (select sum(weight) from egypt.elephant) ),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
+    pool.query("select fabric, Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  ,Round(( sum(weight) / (select sum(weight) from egypt.elephant) ),2) as 'weightPercent'  from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by fabric order by 1;", (err, response, fields) => {
         // const marl = 'Marl';
         // const ns1 = 'NS I';
         // const ns2 = 'NS II';
@@ -66,7 +66,7 @@ exports.totalWeightCountPerFabric = (req, res) => {
 // 4, 5, 6, 7, 8 & 9 Count for Panel 2 A
 exports.percentOfFabricTotalBlackened = (req, res, next) => {
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query(`select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;`, (err, response, fields) => {
+    pool.query("select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
         if(response !== undefined){
 
             categorized  = response.map(item =>{
@@ -130,7 +130,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
 // 4, 5, 6, 7, 8 & 9 Weight for Panel 2 B
 exports.percentOfFabricWeightBlackened = (req, res, next) => {
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query(`select  blackened, fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;`, (err, response, fields) => {
+    pool.query("select  blackened, fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
         if(response !== undefined){
 
             categorized  = response.map(item =>{
@@ -193,7 +193,7 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
 }
 // Panel 3 Proportion of count by type
 exports.totalCountPerType = (req, res) => {
-    pool.query(`select distinct typedescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) * 100),2) as 'countPercent' from egypt.elephant group by  typedescription order by 2 desc;`, (err, response, fields) => {
+    pool.query("select distinct typedescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) * 100),2) as 'countPercent' from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by  typedescription order by 2 desc;", (err, response, fields) => {
         let bodySherds = _.groupBy(response,(o)=>{if(o.type==='body sherds' || o.type==='body sherd'){return 'sherds'}});
         let rim = _.groupBy(response,(o)=>{if(o.type==='rims tstc' ){return 'rimtstc'}});
         let hem = _.groupBy(response,(o)=>{if(o.type==='hem cup' || o.type==='hem cups'){return 'hemcups'}});
@@ -234,7 +234,7 @@ exports.totalCountPerType = (req, res) => {
 }
 // Panel 3 Proportion of count by type
 exports.totalWeightPerType = (req, res) => {
-    pool.query(`select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent' from egypt.elephant group by  typedescription order by 2 desc;`, (err, response, fields) => {
+    pool.query("select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent' from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by  typedescription order by 2 desc;", (err, response, fields) => {
         let bodySherds = _.groupBy(response,(o)=>{if(o.type==='body sherds' || o.type==='body sherd'){return 'sherds'}});
         let rim = _.groupBy(response,(o)=>{if(o.type==='rims tstc' ){return 'rimtstc'}});
         let hem = _.groupBy(response,(o)=>{if(o.type==='hem cup' || o.type==='hem cups'){return 'hemcups'}});
@@ -273,13 +273,6 @@ exports.totalWeightPerType = (req, res) => {
         res.send(newarr.reverse());
     })
 }
-// -- 1 Total Weight per fabric type
-exports.totalWeightPerFabric = (req, res) => {
-    pool.query(`select fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
-        res.send(response);
-    })
-}
-
 const convertArrayToSqlIn = (list) => {
     let oldText, concatText, newText; 
 
@@ -345,12 +338,6 @@ exports.getDetailTable = (req,res,next)=>{
     })
     let sql = "Select * from egypt.elephant;";
     pool.query(sql, (err,response,fields)=>{
-        res.send(response);
-    })
-}
-exports.percentOfFabricTotalBlackenedByLocusGroup = (req,res) =>{
-    let sql = "select  lat,lang, blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant  group by lat,lang,blackened,fabric order by 1,2 asc;";
-    pool.query(sql, (err, response, fields) => {
         res.send(response);
     })
 }
