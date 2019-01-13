@@ -27,7 +27,7 @@ module.exports = function (app) {
        app.get('/elephant', elephant.allElephant); 
        app.post('/dash/latlang',elephant.locusLatLangs);
 
-       app.get('/elephant', dashboard.allElephant); 
+       app.post('/dash/elephant', dashboard.allElephant); 
        app.post('/dash/details/totals',dashboard.getDetailTotals);
        app.post('/dash/details/table',dashboard.getDetailTable);
        app.post('/dash/panel1', dashboard.totalWeightCountPerFabric);
