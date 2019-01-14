@@ -234,7 +234,7 @@ exports.totalCountPerType = (req, res) => {
 }
 // Panel 3 Proportion of count by type
 exports.totalWeightPerType = (req, res) => {
-    pool.query("select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent' from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by  typedescription order by 2 desc;", (err, response, fields) => {
+    pool.query("select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight)  from egypt.elephant) * 100),2) as 'weightPercent' from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +") group by  typedescription order by 2 desc;", (err, response, fields) => {
         let bodySherds = _.groupBy(response,(o)=>{if(o.type==='body sherds' || o.type==='body sherd'){return 'sherds'}});
         let rim = _.groupBy(response,(o)=>{if(o.type==='rims tstc' ){return 'rimtstc'}});
         let hem = _.groupBy(response,(o)=>{if(o.type==='hem cup' || o.type==='hem cups'){return 'hemcups'}});
