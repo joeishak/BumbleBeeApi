@@ -23,12 +23,16 @@ pool.connect(err => {
 exports.elephantData = (req, res, next) => {
     elephantData.forEach((item) => {
         let elephante = new UnCleansedElephants(item);
-        console.log(elephante);
+        // console.log(elephante);
         pool.query(elephante.insertIntoDatabase(true), (response, err, fields) => {
-            console.log(response)
+            if(err){
+                console.log(response);
+            }
         });
+
     });
-    res.send('hi from elephant');
+    res.send('Records have been inserted');
+
 };
 
 exports.redData = (req, res, next) => {
@@ -37,7 +41,7 @@ exports.redData = (req, res, next) => {
         let red = new Reds(item);
         console.log(red);
         pool.query(red.insertIntoDatabase(true), (response, err, fields) => {
-            console.log(response)
+            if(err) console.log(err);
         });
     });
     res.send('hi from red');
