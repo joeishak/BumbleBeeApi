@@ -8,6 +8,7 @@ const images = require('./controllers/images');
 const etl = require('./controllers/etl');
 const healthy = require('./controllers/healthy');
 const elephant = require('./controllers/elephant');
+const dashboard = require('./controllers/dashboard')
 const red = require('./controllers/red');
 
 module.exports = function (app) {
@@ -24,13 +25,16 @@ module.exports = function (app) {
 
        // Elephant Queries
        app.get('/elephant', elephant.allElephant); 
-       app.get('/dash/panel1', elephant.totalWeightCountPerFabric);
-       app.get('/dash/panel2/count', elephant.percentOfFabricTotalBlackened);
-       app.get('/dash/panel2/weight', elephant.percentOfFabricWeightBlackened);
-       app.get('/dash/panel3/count', elephant.totalCountPerType);
-       app.get('/dash/panel3/weight', elephant.totalWeightPerType);
        app.post('/dash/latlang',elephant.locusLatLangs);
-       app.get('/dash/blackenedlatlang',elephant.percentOfFabricTotalBlackenedByLocusGroup);
+
+       app.post('/dash/elephant', dashboard.allElephant); 
+       app.post('/dash/details/totals',dashboard.getDetailTotals);
+       app.post('/dash/details/table',dashboard.getDetailTable);
+       app.post('/dash/panel1', dashboard.totalWeightCountPerFabric);
+       app.post('/dash/panel2/count', dashboard.percentOfFabricTotalBlackened);
+       app.post('/dash/panel2/weight', dashboard.percentOfFabricWeightBlackened);
+       app.post('/dash/panel3/count', dashboard.totalCountPerType);
+       app.post('/dash/panel3/weight', dashboard.totalWeightPerType);
 
        app.post('/test', healthy.postRequestTest)
 
