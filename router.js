@@ -19,13 +19,15 @@ module.exports = function (app) {
        //ETL
        app.get('/fossils/reds', etl.redData);
        app.get('/fossils/elephant', etl.elephantData);
+       app.get('/fossils/khppsherds',etl.khppBodySherds)
+       app.get('/fossils/khppdiagnostics',etl.khppDiagnostics)
 
        //Reds Queries
        app.get('/red', red.allRed);
 
        // Elephant Queries
        app.get('/elephant', elephant.allElephant); 
-       app.post('/dash/latlang',elephant.locusLatLangs);
+       app.post('/dash/latlang',dashboard.locusLatLangs);
 
        app.post('/dash/elephant', dashboard.allElephant); 
        app.post('/dash/details/totals',dashboard.getDetailTotals);

@@ -5,8 +5,7 @@ let router = express.Router();
 let Reds = require('../models/Reds.js');
 let UnCleansedElephants = require('../models/UnCleansedElephants.js');
 let mySql = require('mysql');
-let elephantData = require('../elephant');
-let redData = require('../reds');
+
 let _ = require('lodash');
 let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../joeconfig.js');
@@ -16,7 +15,7 @@ const pool = new mySql.createConnection(config)
 // Check for Errors
 pool.connect(err => {
     if (err) console.log(err);
-    else console.log('success');
+    // else //console.log('success');
 })
 
 exports.allElephant = (req, res, next) => {
@@ -83,7 +82,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
                 let newItem;
                 let key = _.keys(grouped)[i];
 
-                console.log(key);
+                //console.log(key);
                 let marl = _.sumBy(grouped[key],(o) =>{if(o.fabric === 'Marl') {
                     if(!o.totalPercent){
                         return 0;
@@ -147,7 +146,7 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
                 let newItem;
                 let key = _.keys(grouped)[i];
 
-                console.log(key);
+                //console.log(key);
                 let marl = _.sumBy(grouped[key],(o) =>{if(o.fabric === 'Marl') {
                     if(!o.weightPercent){
                         return 0;
@@ -204,7 +203,7 @@ exports.totalCountPerType = (req, res) => {
         let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.countPercent});
         let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.countPercent});
 
-        console.log(bodySum);
+        //console.log(bodySum);
         let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
         let otherSum = 100 - totalDefinedSum;
         let model = [{
@@ -245,7 +244,7 @@ exports.totalWeightPerType = (req, res) => {
         let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.weightPercent});
         let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.weightPercent});
 
-        console.log(bodySum);
+        //console.log(bodySum);
         let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
         let otherSum = 100 - totalDefinedSum;
         let model = [{
@@ -288,13 +287,15 @@ const convertArrayToSqlIn = (list) => {
 
         oldText = newText;
     }
-    console.log(concatText)
+    //console.log(concatText)
     return concatText;
 }
 exports.locusLatLangs = (req,res) =>{
-    console.log(req.body);
+    console.log('Getting Lat Langs');
   
     let sql = "Select distinct left(locusNum,5) 'locusgroup', lat, lang from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +");" ;
+    console.log('THE SQL:',sql);
+
     pool.query(sql, (err, response, fields) => {
         console.log(response);
         res.send(response);
