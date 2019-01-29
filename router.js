@@ -25,7 +25,7 @@ module.exports = function (app) {
 
        // Elephant Queries
        app.get('/elephant', elephant.allElephant); 
-       app.post('/dash/latlang',elephant.locusLatLangs);
+       app.post('/dash/latlang',dashboard.locusLatLangs);
 
        app.post('/dash/elephant', dashboard.allElephant); 
        app.post('/dash/details/totals',dashboard.getDetailTotals);

@@ -10,13 +10,13 @@ let redData = require('../reds');
 let _ = require('lodash');
 let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../joeconfig.js');
-
+// let SiteLocations = require('../data/')
 let categorized, grouped, accumulated = [];
 const pool = new mySql.createConnection(config)
 // Check for Errors
 pool.connect(err => {
-    if (err) console.log(err);
-    else console.log('success');
+     if (err)  console.log('Error connecting to MySql');
+    // else // console.log('');
 })
 
 exports.allElephant = (req, res, next) => {
@@ -83,7 +83,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
                 let newItem;
                 let key = _.keys(grouped)[i];
 
-                console.log(key);
+                // console.log(key);
                 let marl = _.sumBy(grouped[key],(o) =>{if(o.fabric === 'Marl') {
                     if(!o.totalPercent){
                         return 0;
@@ -147,7 +147,7 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
                 let newItem;
                 let key = _.keys(grouped)[i];
 
-                console.log(key);
+                // console.log(key);
                 let marl = _.sumBy(grouped[key],(o) =>{if(o.fabric === 'Marl') {
                     if(!o.weightPercent){
                         return 0;
@@ -204,7 +204,7 @@ exports.totalCountPerType = (req, res) => {
         let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.countPercent});
         let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.countPercent});
 
-        console.log(bodySum);
+        // console.log(bodySum);
         let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
         let otherSum = 100 - totalDefinedSum;
         let model = [{
@@ -245,7 +245,7 @@ exports.totalWeightPerType = (req, res) => {
         let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.weightPercent});
         let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.weightPercent});
 
-        console.log(bodySum);
+        // console.log(bodySum);
         let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
         let otherSum = 100 - totalDefinedSum;
         let model = [{
@@ -288,11 +288,11 @@ const convertArrayToSqlIn = (list) => {
 
         oldText = newText;
     }
-    console.log(concatText)
+    // console.log(concatText)
     return concatText;
 }
 exports.locusLatLangs = (req,res) =>{
-    console.log(req.body);
+    // console.log(req.body);
   
     let sql = "Select distinct left(locusNum,5) 'locusgroup', lat, lang from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +");" ;
     pool.query(sql, (err, response, fields) => {
@@ -341,3 +341,14 @@ exports.getDetailTable = (req,res,next)=>{
         res.send(response);
     })
 }
+
+
+
+/*** New Dashboard Queries
+ */
+
+//  exports.getSiteLocations = (req,re
+//     req.body.forEach(item=>{
+//        _.find()
+//     })
+//  }
