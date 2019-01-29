@@ -19,6 +19,8 @@ module.exports = function (app) {
        //ETL
        app.get('/fossils/reds', etl.redData);
        app.get('/fossils/elephant', etl.elephantData);
+       app.get('/fossils/khppsherds',etl.khppBodySherds)
+       app.get('/fossils/khppdiagnostics',etl.khppDiagnostics)
 
        //Reds Queries
        app.get('/red', red.allRed);
