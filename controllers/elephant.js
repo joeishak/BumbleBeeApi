@@ -5,8 +5,6 @@ let router = express.Router();
 let Reds = require('../models/Reds.js');
 let UnCleansedElephants = require('../models/UnCleansedElephants.js');
 let mySql = require('mysql');
-let elephantData = require('../elephant');
-let redData = require('../reds');
 let _ = require('lodash');
 let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../joeconfig.js');
@@ -21,7 +19,7 @@ pool.connect(err => {
 
 exports.allElephant = (req, res, next) => {
     pool.query('select * from egypt.elephantine;', (err, response, fields) => {
-        res.send(response);
+        res.status(200).send(response);
     });
 };
 
@@ -57,7 +55,7 @@ exports.totalWeightCountPerFabric = (req, res) => {
                 accumulated[i] = newItem;
             }
             //return the accumulated array to client
-            res.send(accumulated);
+            res.status(200).send(accumulated);
         } else {
             res.status(404).send('Resource not found');
         }
@@ -118,7 +116,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
             }
 
 
-            res.send({
+            res.status(200).send({
                 exterior: extArr,
                 interior: intArr,
                 both: bothArr,
@@ -182,7 +180,7 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
             }
 
 
-            res.send({
+            res.status(200).send({
                 exterior: extArr,
                 interior: intArr,
                 both: bothArr,
@@ -229,7 +227,7 @@ exports.totalCountPerType = (req, res) => {
             color: '#3eaee2'
           }];
           let newarr = _.sortBy(model, (o)=>{return o.count});
-        res.send(newarr.reverse());
+          res.status(200).send(newarr.reverse());
     })
 }
 // Panel 3 Proportion of count by type
@@ -270,13 +268,13 @@ exports.totalWeightPerType = (req, res) => {
             color: '#3eaee2'
           }];
           let newarr = _.sortBy(model, (o)=>{return o.count});
-        res.send(newarr.reverse());
+          res.status(200).send(newarr.reverse());
     })
 }
 // -- 1 Total Weight per fabric type
 exports.totalWeightPerFabric = (req, res) => {
     pool.query(`select fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant group by fabric order by 1;`, (err, response, fields) => {
-        res.send(response);
+        res.status(200).send(response);
     })
 }
 
@@ -304,7 +302,7 @@ exports.locusLatLangs = (req,res) =>{
     let sql = "Select distinct left(locusNum,5) 'locusgroup', lat, lang from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +");" ;
     pool.query(sql, (err, response, fields) => {
         console.log(response);
-        res.send(response);
+        res.status(200).send(response);
     })
 }
 
@@ -351,6 +349,6 @@ exports.getDetailTable = (req,res,next)=>{
 exports.percentOfFabricTotalBlackenedByLocusGroup = (req,res) =>{
     let sql = "select  lat,lang, blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant  group by lat,lang,blackened,fabric order by 1,2 asc;";
     pool.query(sql, (err, response, fields) => {
-        res.send(response);
+        res.status(200).send(response);
     })
 }
