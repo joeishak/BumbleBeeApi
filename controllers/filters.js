@@ -4,7 +4,7 @@ let express = require('express');
 let router = express.Router();
 let mySql = require('mysql');
 let _ = require('lodash');
-let config = require('../joeconfig.js');
+let config = require('../jrconfig.js');
 
 let categorized, grouped, accumulated = [];
 const pool = new mySql.createConnection(config)

@@ -10,6 +10,7 @@ const healthy = require('./controllers/healthy');
 const elephant = require('./controllers/elephant');
 const dashboard = require('./controllers/dashboard')
 const red = require('./controllers/red');
+const forms = require('./controllers/forms');
 
 module.exports = function (app) {
        app.post('/signup', authentication.signup);
@@ -39,5 +40,8 @@ module.exports = function (app) {
        app.post('/dash/panel3/weight', dashboard.totalWeightPerType);
 
        app.post('/test', healthy.postRequestTest)
+
+       // Forms
+       app.post('/write/elephantine', forms.writeElephantineForms)
 
 }
