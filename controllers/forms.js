@@ -11,7 +11,7 @@ pool.connect(err => {
 });
 
 exports.writeElephantineForms = (req,res,next) => {
-    // console.log(req.body.form)
+    console.log(req.body.form)
     const form = req.body.form;
     const query = `INSERT INTO egypt.elephantine (locusNum, objectGroupNum, objectNum, numberOfObjects, typeDescription, typeNum, weight, fabric, diameter, preservations, sfCoating, sfTreatment, blackened, incisedDecoration, application, paintedDecoration, comments, photo, processedBy, processedDate, enteredBy, enteredDate, rlNum, sheetNum, lat, lng, room, phase) VALUES ('${form.locusNumber}', '${form.objectGroupNum}', 
             '${form.objectNum}','${form.numberOfObjects}',
@@ -35,7 +35,11 @@ exports.writeElephantineForms = (req,res,next) => {
         if (response) {
             res.send({status: 201, OkPacket: response});
         }
-        console.log('ERROR', err);
-        console.log('RESPONSE', response);
+        if (err) {
+
+        }
+
+        // console.log('ERROR', err);
+        // console.log('RESPONSE', response);
     });
 }

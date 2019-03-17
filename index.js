@@ -10,7 +10,12 @@ let mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/auth');
 //App Set Up
 app.use(morgan('combined'));
-app.use(bodyParser.json({typer:'*/*'}));
+// app.use(bodyParser.json({typer:'*/*'}));
+
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+
 // Setting the headers for all routes to be CORS compliant
 app.use(function(req,res,next) {
 res.setHeader("Access-Control-Allow-Origin", "*");
