@@ -50,15 +50,16 @@ exports.writeToKHPP = (req, res, next) => {
     console.log(sherdsArr);
 
 
-    const formQuery = `INSERT INTO egypt.khppform (id,tagNumber,dueDate,processedBy) VALUES ("${form.id}", "${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
+    const formQuery = `INSERT INTO egypt.khppform (tagNumber,dueDate,processedBy) VALUES ("${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
 
     pool.query(formQuery, (err, response, fields) => {
         // Success
         if (response) {
-            
+            console.log(response);
+            const formId = response.insertId;
             // // TRIAGE
             const triageQueryArr = triageArr.map(triage => {
-                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, rimCount, rimWeight, baseCount, baseWeight, decoratorCount, decoratorWeight, comments) VALUES ("${form.id}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.RimCount}", "${triage.RimWeight}", "${triage.BaseCount}","${triage.BaseWeight}", "${triage.DecoratorCount}", "${triage.DecoratorWeight}","${triage.Comments}");`;
+                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, rimCount, rimWeight, baseCount, baseWeight, decoratorCount, decoratorWeight, comments) VALUES ("${formId}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.RimCount}", "${triage.RimWeight}", "${triage.BaseCount}","${triage.BaseWeight}", "${triage.DecoratorCount}", "${triage.DecoratorWeight}","${triage.Comments}");`;
             });
             for (let i = 0; i < triageQueryArr.length; i++) {
                 const singleTriageQuery = triageQueryArr[i];
@@ -73,7 +74,7 @@ exports.writeToKHPP = (req, res, next) => {
             }
 
             const sherdsQueryArr = sherdsArr.map(sherds => {
-                return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, normal, fireIn, fireOut, fireBoth, rimsTstc, other) VALUES ("${form.id}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.Normal}", "${sherds.FireIn}", "${sherds.FireOut}", "${sherds.FireBoth}", "${sherds.RimsTSTC}", "${sherds.Other}");`;
+                return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, normal, fireIn, fireOut, fireBoth, rimsTstc, other) VALUES ("${formId}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.Normal}", "${sherds.FireIn}", "${sherds.FireOut}", "${sherds.FireBoth}", "${sherds.RimsTSTC}", "${sherds.Other}");`;
             });
             for (let j = 0; j < sherdsQueryArr.length; j++) {
                 const singleSherdQuery = sherdsQueryArr[j];
