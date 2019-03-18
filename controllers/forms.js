@@ -30,16 +30,69 @@ exports.writeElephantineForms = (req,res,next) => {
     // console.log(query);
 
      pool.query(query, (err, response, fields) => {
-        
         // Success
         if (response) {
             res.send({status: 201, OkPacket: response});
         }
         if (err) {
-
         }
-
-        // console.log('ERROR', err);
-        // console.log('RESPONSE', response);
     });
+}
+
+exports.writeToKHPP = (req, res, next) => {
+
+    console.log(req.body);
+
+    const form = req.body.form;
+    const sherdsArr = req.body.sherds;
+    const triageArr = req.body.triage;
+
+    console.log(sherdsArr);
+
+
+    const formQuery = `INSERT INTO egypt.khppform (id,tagNumber,dueDate,processedBy) VALUES ("${form.id}", "${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
+
+    pool.query(formQuery, (err, response, fields) => {
+        // Success
+        if (response) {
+            
+            // // TRIAGE
+            const triageQueryArr = triageArr.map(triage => {
+                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, rimCount, rimWeight, baseCount, baseWeight, decoratorCount, decoratorWeight, comments) VALUES ("${form.id}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.RimCount}", "${triage.RimWeight}", "${triage.BaseCount}","${triage.BaseWeight}", "${triage.DecoratorCount}", "${triage.DecoratorWeight}","${triage.Comments}");`;
+            });
+            for (let i = 0; i < triageQueryArr.length; i++) {
+                const singleTriageQuery = triageQueryArr[i];
+                pool.query(singleTriageQuery, (err, response, fields) => { 
+                    if (response) { 
+                        console.log("HOOOOOYYYY")
+                    }
+                    if (err) { 
+                        console.log("OH NOOOO!!")
+                    }
+                });
+            }
+
+            const sherdsQueryArr = sherdsArr.map(sherds => {
+                return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, normal, fireIn, fireOut, fireBoth, rimsTstc, other) VALUES ("${form.id}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.Normal}", "${sherds.FireIn}", "${sherds.FireOut}", "${sherds.FireBoth}", "${sherds.RimsTSTC}", "${sherds.Other}");`;
+            });
+            for (let j = 0; j < sherdsQueryArr.length; j++) {
+                const singleSherdQuery = sherdsQueryArr[j];
+                pool.query(singleSherdQuery, (err, response, fields) => { 
+                    if (response) {    
+                        console.log("YESSS")
+                    }
+                    if (err) {                 
+                        console.log("OHNOOOO")
+                    }
+                });
+            }
+
+            res.send({status: 201, okPacket: response, message: 'INSERTS OKAY'});
+            
+        }
+        if (err) {
+            res.send({status: 999, okPacket: response, message: 'ERROR IN INSERT'});
+        }
+    });
+
 }

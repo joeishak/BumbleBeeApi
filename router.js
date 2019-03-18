@@ -43,5 +43,6 @@ module.exports = function (app) {
 
        // Forms
        app.post('/write/elephantine', forms.writeElephantineForms)
+       app.post('/write/khpp', forms.writeToKHPP);
 
 }
