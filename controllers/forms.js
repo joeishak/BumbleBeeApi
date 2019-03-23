@@ -59,7 +59,7 @@ exports.writeToKHPP = (req, res, next) => {
             const formId = response.insertId;
             // // TRIAGE
             const triageQueryArr = triageArr.map(triage => {
-                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, rimCount, rimWeight, baseCount, baseWeight, decoratorCount, decoratorWeight, comments) VALUES ("${formId}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.RimCount}", "${triage.RimWeight}", "${triage.BaseCount}","${triage.BaseWeight}", "${triage.DecoratorCount}", "${triage.DecoratorWeight}","${triage.Comments}");`;
+                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes) VALUES ("${formId}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.Count}", "${triage.Weight}", "${triage.KGs}", "${triage.Comments}", "${triage.Notes}");`;
             });
             for (let i = 0; i < triageQueryArr.length; i++) {
                 const singleTriageQuery = triageQueryArr[i];
@@ -74,7 +74,7 @@ exports.writeToKHPP = (req, res, next) => {
             }
 
             const sherdsQueryArr = sherdsArr.map(sherds => {
-                return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, normal, fireIn, fireOut, fireBoth, rimsTstc, other) VALUES ("${formId}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.Normal}", "${sherds.FireIn}", "${sherds.FireOut}", "${sherds.FireBoth}", "${sherds.RimsTSTC}", "${sherds.Other}");`;
+                return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, normalCount, normalWeight, fireInCount,  fireInWeight, fireOutCount, fireOutWeight, fireBothCount, fireBothWeight, rimsTstc, other) VALUES ("${formId}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.NormalCount}", "${sherds.NormalWeight}", "${sherds.FireInCount}", "${sherds.FireInWeight}", "${sherds.FireOutCount}", "${sherds.FireOutWeight}", "${sherds.FireBothCount}", "${sherds.FireBothWeight}", "${sherds.RimsTSTC}", "${sherds.Other}");`;
             });
             for (let j = 0; j < sherdsQueryArr.length; j++) {
                 const singleSherdQuery = sherdsQueryArr[j];
