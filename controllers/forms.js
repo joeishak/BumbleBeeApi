@@ -42,11 +42,11 @@ exports.writeElephantineForms = (req,res,next) => {
 exports.writeToKHPP = (req, res, next) => {
 
     console.log(req.body);
-
     const form = req.body.form;
     const sherdsArr = req.body.sherds;
     const triageArr = req.body.triage;
 
+ 
     console.log(sherdsArr);
 
 
@@ -58,8 +58,10 @@ exports.writeToKHPP = (req, res, next) => {
             console.log(response);
             const formId = response.insertId;
             // // TRIAGE
+           
+            // Insert on bOdy
             const triageQueryArr = triageArr.map(triage => {
-                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes) VALUES ("${formId}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.Count}", "${triage.Weight}", "${triage.KGs}", "${triage.Comments}", "${triage.Notes}");`;
+                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,optionType) VALUES ("${formId}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.Count}", "${triage.Weight}", "${triage.KGs}", "${triage.Comments}", "${triage.Notes}", "${triage.Options}");`;
             });
             for (let i = 0; i < triageQueryArr.length; i++) {
                 const singleTriageQuery = triageQueryArr[i];
@@ -73,20 +75,23 @@ exports.writeToKHPP = (req, res, next) => {
                 });
             }
 
-            const sherdsQueryArr = sherdsArr.map(sherds => {
-                return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, normalCount, normalWeight, fireInCount,  fireInWeight, fireOutCount, fireOutWeight, fireBothCount, fireBothWeight, rimsTstc, other) VALUES ("${formId}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.NormalCount}", "${sherds.NormalWeight}", "${sherds.FireInCount}", "${sherds.FireInWeight}", "${sherds.FireOutCount}", "${sherds.FireOutWeight}", "${sherds.FireBothCount}", "${sherds.FireBothWeight}", "${sherds.RimsTSTC}", "${sherds.Other}");`;
-            });
-            for (let j = 0; j < sherdsQueryArr.length; j++) {
-                const singleSherdQuery = sherdsQueryArr[j];
-                pool.query(singleSherdQuery, (err, response, fields) => { 
-                    if (response) {    
-                        console.log("YESSS")
-                    }
-                    if (err) {                 
-                        console.log("OHNOOOO")
-                    }
+            if(sherdsArr.length!==0){
+                const sherdsQueryArr = sherdsArr.map(sherds => {
+                    return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, optionType, weightType, count,  weight, other) VALUES ("${formId}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.Options}", "${sherds.KGs}", "${sherds.Weight}", "${sherds.Count}", "${sherds.Other}");`;
                 });
+                for (let j = 0; j < sherdsQueryArr.length; j++) {
+                    const singleSherdQuery = sherdsQueryArr[j];
+                    pool.query(singleSherdQuery, (err, response, fields) => { 
+                        if (response) {    
+                            console.log("YESSS")
+                        }
+                        if (err) {                 
+                            console.log(err)
+                        }
+                    });
+                }
             }
+            
 
             res.send({status: 201, okPacket: response, message: 'INSERTS OKAY'});
             
