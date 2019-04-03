@@ -61,7 +61,7 @@ exports.writeToKHPP = (req, res, next) => {
            
             // Insert on bOdy
             const triageQueryArr = triageArr.map(triage => {
-                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,optionType) VALUES ("${formId}", "${triage.FabricType}", "${triage.BodyOrDiagnostic}", "${triage.Count}", "${triage.Weight}", "${triage.KGs}", "${triage.Comments}", "${triage.Notes}", "${triage.Options}");`;
+                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
             });
             for (let i = 0; i < triageQueryArr.length; i++) {
                 const singleTriageQuery = triageQueryArr[i];
@@ -77,7 +77,7 @@ exports.writeToKHPP = (req, res, next) => {
 
             if(sherdsArr.length!==0){
                 const sherdsQueryArr = sherdsArr.map(sherds => {
-                    return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, optionType, weightType, count,  weight, other) VALUES ("${formId}", "${sherds.FabricType}", "${sherds.SurfaceTreatment}", "${sherds.Options}", "${sherds.KGs}", "${sherds.Weight}", "${sherds.Count}", "${sherds.Other}");`;
+                    return  `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, comments, sherdType, count,  weight, weightType, notes) VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", "${sherds.comments}", "${sherds.sherdType}", "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", "${sherds.notes}");`;
                 });
                 for (let j = 0; j < sherdsQueryArr.length; j++) {
                     const singleSherdQuery = sherdsQueryArr[j];
