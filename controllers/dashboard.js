@@ -369,7 +369,7 @@ exports.getKHPPWeightBlackenedQuery = (req,res,next) =>{
     let intArr, extArr, nullArr, bothArr = [];
     let sql = "select  sherdType, fabricType, "+
              "( sum(case when weightType = 'g' then (weight/1000) else weight end) / (select sum(case when weightType = 'g' then (weight/1000) else weight end)"+
-                "from egypt.khppbodysherds)*100 ) as 'weightPercent' , "+
+                "from egypt.khppbodysherds) ) as 'weightPercent' , "+
                 "sum(case when weightType = 'g' then (weight/1000) else weight end) 'TotalWeightKg' "+
                 "from egypt.khppbodysherds  group by sherdType,fabrictype order by 1,2 asc;";
     pool.query(sql, (err, response, fields) => {
@@ -510,7 +510,7 @@ exports.totalWeightCountPerFabricNoParam = (req, res) => {
 // 4, 5, 6, 7, 8 & 9 Count for Panel 2 A
 exports.percentOfFabricTotalBlackenedNoParam = (req, res, next) => {
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query("select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
+    pool.query("select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) ),2) as 'totalPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
         if (response !== undefined) {
 
             categorized = response.map(item => {
@@ -575,7 +575,7 @@ exports.percentOfFabricTotalBlackenedNoParam = (req, res, next) => {
 // 4, 5, 6, 7, 8 & 9 Weight for Panel 2 B
 exports.percentOfFabricWeightBlackenedNoParam = (req, res, next) => {
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query("select  blackened, fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
+    pool.query("select  blackened, fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) ),2) as 'weightPercent'  from egypt.elephant  group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
         if (response !== undefined) {
 
             categorized = response.map(item => {
@@ -639,7 +639,7 @@ exports.percentOfFabricWeightBlackenedNoParam = (req, res, next) => {
 }
 // Panel 3 Proportion of count by type
 exports.totalCountPerTypeNoParam = (req, res) => {
-    pool.query("select distinct typedescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) * 100),2) as 'countPercent' from egypt.elephant  group by  typedescription order by 2 desc;", (err, response, fields) => {
+    pool.query("select distinct typedescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant) ),2) as 'countPercent' from egypt.elephant  group by  typedescription order by 2 desc;", (err, response, fields) => {
         let bodySherds = _.groupBy(response, (o) => { if (o.type === 'body sherds' || o.type === 'body sherd') { return 'sherds' } });
         let rim = _.groupBy(response, (o) => { if (o.type === 'rims tstc') { return 'rimtstc' } });
         let hem = _.groupBy(response, (o) => { if (o.type === 'hem cup' || o.type === 'hem cups') { return 'hemcups' } });
@@ -680,7 +680,7 @@ exports.totalCountPerTypeNoParam = (req, res) => {
 }
 // Panel 3 Proportion of count by type
 exports.totalWeightPerTypeNoParam = (req, res) => {
-    pool.query("select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight)  from egypt.elephant) * 100),2) as 'weightPercent' from egypt.elephant  group by  typedescription order by 2 desc;", (err, response, fields) => {
+    pool.query("select distinct typedescription 'type', Round(( sum(weight) / (select sum(weight)  from egypt.elephant) ),2) as 'weightPercent' from egypt.elephant  group by  typedescription order by 2 desc;", (err, response, fields) => {
         let bodySherds = _.groupBy(response, (o) => { if (o.type === 'body sherds' || o.type === 'body sherd') { return 'sherds' } });
         let rim = _.groupBy(response, (o) => { if (o.type === 'rims tstc') { return 'rimtstc' } });
         let hem = _.groupBy(response, (o) => { if (o.type === 'hem cup' || o.type === 'hem cups') { return 'hemcups' } });
@@ -723,8 +723,8 @@ exports.totalWeightPerTypeNoParam = (req, res) => {
 
 
 exports.compareFabrics = (req,res,next) =>{
-    let eleSql = "SELECT sfCoating, count(*) as 'Count' FROM egypt.elephantine group by sfCoating;";
-    let khppSql = "SELECT surfaceTreatment, count(*) as 'Count' FROM egypt.khppbodysherds group by surfaceTreatment;";
+    let eleSql = "SELECT sfCoating, count(*) as 'Count', (count(*)/ (Select count(*) from egypt.elephantine) )  as 'CountProportion'  FROM egypt.elephantine group by sfCoating;";
+    let khppSql = "SELECT surfaceTreatment, count(*) as 'Count', (count(*)/ (Select count(*) from egypt.khppbodysherds) )  as 'CountProportion'  FROM egypt.khppbodysherds group by surfaceTreatment;";
     
     pool.query(eleSql,(err, eleData, fields)=>{
 
@@ -737,29 +737,29 @@ exports.compareFabrics = (req,res,next) =>{
 
                     let responseObj = {
                         rSlipIn: [
-                             _.groupBy(eleData,(item=>{return item.sfCoating ==='red slip in'})).true.map(item=>{return item.Count})[0],
-                             _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'R Slip In'})).true.map(item=>{return item.Count})[0]
+                             _.groupBy(eleData,(item=>{return item.sfCoating ==='red slip in'})).true.map(item=>{return item.CountProportion})[0],
+                             _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'R Slip In'})).true.map(item=>{return item.CountProportion})[0]
                         ],
                         rSlipOut: [
-                             _.groupBy(eleData,(item=>{return item.sfCoating ==='red slip out'})).true.map(item=>{return item.Count})[0],
-                            _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'R Slip Out'})).true.map(item=>{return item.Count})[0]
+                             _.groupBy(eleData,(item=>{return item.sfCoating ==='red slip out'})).true.map(item=>{return item.CountProportion})[0],
+                            _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'R Slip Out'})).true.map(item=>{return item.CountProportion})[0]
                         ],
                         rSlipBoth: [
-                             _.groupBy(eleData,(item=>{return item.sfCoating ==='red slip in/out'})).true.map(item=>{return item.Count})[0],
-                              _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'R Slip Both'})).true.map(item=>{return item.Count})[0]
+                             _.groupBy(eleData,(item=>{return item.sfCoating ==='red slip in/out'})).true.map(item=>{return item.CountProportion})[0],
+                              _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'R Slip Both'})).true.map(item=>{return item.CountProportion})[0]
                         ],
                         creamSlipIn: [
-                             _.groupBy(eleData,(item=>{return item.sfCoating ==='cream slip in'})).true.map(item=>{return item.Count})[0],
-                             _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'Cream Slip In'})).true.map(item=>{return item.Count})[0]
+                             _.groupBy(eleData,(item=>{return item.sfCoating ==='cream slip in'})).true.map(item=>{return item.CountProportion})[0],
+                             _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'Cream Slip In'})).true.map(item=>{return item.CountProportion})[0]
                         ],
                         creamSlipOut: [
-                              _.groupBy(eleData,(item=>{return item.sfCoating ==='cream slip out'})).true.map(item=>{return item.Count})[0],
-                            _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'Cream Slip Out'})).true.map(item=>{return item.Count})[0]
+                              _.groupBy(eleData,(item=>{return item.sfCoating ==='cream slip out'})).true.map(item=>{return item.CountProportion})[0],
+                            _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'Cream Slip Out'})).true.map(item=>{return item.CountProportion})[0]
                         ],
 
                         untreated: [
-                              _.groupBy(eleData,(item=>{return item.sfCoating ==='uncoated' })).true.map(item=>{return item.Count})[0],
-                            _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'Untreated'})).true.map(item=>{return item.Count})[0]
+                              _.groupBy(eleData,(item=>{return item.sfCoating ==='uncoated' })).true.map(item=>{return item.CountProportion})[0],
+                            _.groupBy(khppData,(item=>{return item.surfaceTreatment === 'Untreated'})).true.map(item=>{return item.CountProportion})[0]
                         ]
                     }
                     res.send(responseObj);
