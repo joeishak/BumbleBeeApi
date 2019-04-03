@@ -45,4 +45,14 @@ module.exports = function (app) {
        app.post('/write/elephantine', forms.writeElephantineForms)
        app.post('/write/khpp', forms.writeToKHPP);
 
+
+       //New Queries For Thursday***
+       app.get('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);
+       app.get('/dash/khpp/blackened',dashboard.getKHPPBlackenedQuery);
+       app.get('/dash/ele/fabric', dashboard.totalWeightCountPerFabricNoParam);
+       app.get('/dash/ele/count/blackened', dashboard.percentOfFabricTotalBlackenedNoParam);
+       app.get('/dash/ele/weight/blackened', dashboard.percentOfFabricWeightBlackenedNoParam);
+       app.get('/dash/ele/count/type', dashboard.totalCountPerTypeNoParam);
+       app.get('/dash/ele/weight/type', dashboard.totalWeightPerTypeNoParam);
+
 }
