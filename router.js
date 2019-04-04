@@ -44,7 +44,7 @@ module.exports = function (app) {
        // Forms
        app.post('/write/elephantine', forms.writeElephantineForms)
        app.post('/write/khpp', forms.writeToKHPP);
-
+       app.get('/read/khpp', forms.readFromKHPP);
 
        //New Queries For Thursday***
        app.get('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);
