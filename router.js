@@ -33,11 +33,11 @@ module.exports = function (app) {
        app.post('/dash/elephant', dashboard.allElephant); 
        app.post('/dash/details/totals',dashboard.getDetailTotals);
        app.post('/dash/details/table',dashboard.getDetailTable);
-       app.post('/dash/panel1', dashboard.totalWeightCountPerFabric);
-       app.post('/dash/panel2/count', dashboard.percentOfFabricTotalBlackened);
-       app.post('/dash/panel2/weight', dashboard.percentOfFabricWeightBlackened);
-       app.post('/dash/panel3/count', dashboard.totalCountPerType);
-       app.post('/dash/panel3/weight', dashboard.totalWeightPerType);
+       // app.post('/dash/panel1', dashboard.totalWeightCountPerFabric);
+       // app.post('/dash/panel2/count', dashboard.percentOfFabricTotalBlackened);
+       // app.post('/dash/panel2/weight', dashboard.percentOfFabricWeightBlackened);
+       // app.post('/dash/panel3/count', dashboard.totalCountPerType);
+       // app.post('/dash/panel3/weight', dashboard.totalWeightPerType);
 
        app.post('/test', healthy.postRequestTest)
 
@@ -47,16 +47,18 @@ module.exports = function (app) {
        app.get('/read/khpp', forms.readFromKHPP);
 
        //New Queries For Thursday***
-       app.get('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);
-       app.get('/dash/khpp/weight/blackened',dashboard.getKHPPWeightBlackenedQuery);
-       app.get('/dash/khpp/count/blackened',dashboard.getKHPPCountBlackenedQuery);
+       app.post('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);
+       app.post('/dash/khpp/weight/blackened',dashboard.getKHPPWeightBlackenedQuery);
+       app.post('/dash/khpp/count/blackened',dashboard.getKHPPCountBlackenedQuery);
 
-       app.get('/dash/ele/fabric', dashboard.totalWeightCountPerFabricNoParam);
-       app.get('/dash/ele/count/blackened', dashboard.percentOfFabricTotalBlackenedNoParam);
-       app.get('/dash/ele/weight/blackened', dashboard.percentOfFabricWeightBlackenedNoParam);
-       app.get('/dash/ele/count/type', dashboard.totalCountPerTypeNoParam);
-       app.get('/dash/ele/weight/type', dashboard.totalWeightPerTypeNoParam);
-       app.get('/dash/compare/fabric', dashboard.compareFabrics);
+       app.post('/dash/ele/fabric', dashboard.totalWeightCountPerFabric);
+       app.post('/dash/ele/count/blackened', dashboard.percentOfFabricTotalBlackened);
+       app.post('/dash/ele/weight/blackened', dashboard.percentOfFabricWeightBlackened);
+       app.post('/dash/ele/count/type', dashboard.totalCountPerType);
+       app.post('/dash/ele/weight/type', dashboard.totalWeightPerType);
+       app.post('/dash/compare/fabric', dashboard.compareFabrics);
+
+       app.get('/locusnumbers',dashboard.getLocusNumbers)
 
 
 }
