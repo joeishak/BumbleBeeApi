@@ -50,7 +50,6 @@ module.exports = function (app) {
        app.post('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);
        app.post('/dash/khpp/weight/blackened',dashboard.getKHPPWeightBlackenedQuery);
        app.post('/dash/khpp/count/blackened',dashboard.getKHPPCountBlackenedQuery);
-
        app.post('/dash/ele/fabric', dashboard.totalWeightCountPerFabric);
        app.post('/dash/ele/count/blackened', dashboard.percentOfFabricTotalBlackened);
        app.post('/dash/ele/weight/blackened', dashboard.percentOfFabricWeightBlackened);
