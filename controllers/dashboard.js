@@ -662,39 +662,96 @@ exports.getLocusNumbers = (req, res, next) => {
 exports.totalCountPerType = (req, res) => {
     //console.log('Body from type count', req.body.length);
 
-    pool.query(`select distinct typeDescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant where typeDescription not like'%body sherd%'
+    let sql = `select distinct typeDescription 'type', Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant where typeDescription not like'%body sherd%'
     and typeDescription  not like '%decorated%' ) ),4) as 'countPercent' from egypt.elephant   
     where typeDescription not like'%body sherd%'
     and typeDescription  not like '%decorated%' 
-    and  locusnum in (${convertLocusArrayToSqlIn(req.body)}) group by  typeDescription order by 2 desc;`, (err, response, fields) => {
-            let bodySherds = _.groupBy(response, (o) => { if (o.type === 'body sherds' || o.type === 'body sherd') { return 'sherds' } });
-            let rim = _.groupBy(response, (o) => { if (o.type === 'rims tstc') { return 'rimtstc' } });
-            let hem = _.groupBy(response, (o) => { if (o.type === 'hem cup' || o.type === 'hem cups') { return 'hemcups' } });
-            let flattened = _.groupBy(response, (o) => { if (o.type === 'flattened base') { return 'flatenedbase' } });
+    and  locusnum in (${convertLocusArrayToSqlIn(req.body)}) group by  typeDescription order by 2 desc;`
+    let sql1 = `select distinct typeNum 'type', count(typeDescription) as 'countPercent' from egypt.elephant   
+    where typeDescription not like'%body sherd%'
+    and typeDescription  not like '%decorated%' 
+    and  locusnum in (${convertLocusArrayToSqlIn(req.body)})
+    group by  typeNum order by 2 desc;`
+    pool.query(sql1, (err, response, fields) => {
+            let empty = _.groupBy(response, (o) => { if (o.type === 'null' ) { return 'null' } });
+            let bs = _.groupBy(response, (o) => { if (o.type === 'BS') { return 'bs' } });
+            let OB11 = _.groupBy(response, (o) => { if (o.type === 'O.B1.1' ) { return 'ob11' } });
+            let Om2 = _.groupBy(response, (o) => { if (o.type === 'O.m.2') { return 'om2' } });
+            
+            let ob12 = _.groupBy(response, (o) => { if (o.type === 'O.B1.2') { return 'ob12' } });
+            let b1a = _.groupBy(response, (o) => { if (o.type === 'B.1a') { return 'b1a' } });
+            let b3 = _.groupBy(response, (o) => { if (o.type === 'B.3') { return 'b3' } });
+            let om1 = _.groupBy(response, (o) => { if (o.type === 'O.m.1') { return 'om1' } });
+            let b2a = _.groupBy(response, (o) => { if (o.type === 'B.2a') { return 'b2a' } });
 
-            let bodySum = _.sumBy(bodySherds.sherds, (o) => { return o.countPercent });
-            let rimSum = _.sumBy(rim.rimtstc, (o) => { return o.countPercent });
-            let hemSum = _.sumBy(hem.hemcups, (o) => { return o.countPercent });
-            let flattenedSum = _.sumBy(flattened.flatenedbase, (o) => { return o.countPercent });
+            let od12 = _.groupBy(response, (o) => { if (o.type === 'O.D1.2') { return 'od12' } });
+            let om3 = _.groupBy(response, (o) => { if (o.type === 'O.m.3') { return 'om3' } });
+
+
+            let emptySum = _.sumBy(empty.null, (o) => { return o.countPercent });
+            let bsSum = _.sumBy(bs.bs, (o) => { return o.countPercent });
+            let ob1Sum = _.sumBy(OB11.ob11, (o) => { return o.countPercent });
+            let om2Sum = _.sumBy(Om2.om2, (o) => { return o.countPercent });
+
+            let ob12Sum = _.sumBy(ob12.ob12, (o) => { return o.countPercent });
+            let b1aSum = _.sumBy(b1a.b1a, (o) => { return o.countPercent });
+            let b3Sum = _.sumBy(b3.b3, (o) => { return o.countPercent });
+            let om1Sum = _.sumBy(om1.om1, (o) => { return o.countPercent });
+
+            let b2aSum = _.sumBy(b2a.b2a, (o) => { return o.countPercent });
+            let od12sum = _.sumBy(od12.od12, (o) => { return o.countPercent });
+            let om3Sum = _.sumBy(om3.om3, (o) => { return o.countPercent });
+          
+
+
+
 
             // //(bodySum);
-            let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
-            let otherSum = 100 - totalDefinedSum;
             let model = [{
-                stat: 'Rim Tstc',
-                count: rimSum,
+                stat: 'Null',
+                count: emptySum,
                 color: '#166f99'
-            }, {
-                stat: 'Hem Cups ',
-                count: hemSum,
+            }/* {
+                stat: 'BS',
+                count: bsSum,
+                color: '#166f99'
+            } */, {
+                stat: '0.B1.1',
+                count: ob1Sum,
                 color: '#2185b4'
             }, {
-                stat: 'Flattened Base',
-                count: flattenedSum,
+                stat: 'O.m.2',
+                count: om2Sum,
+                color: '#319fd2'
+            }, 
+            {
+                stat: 'O.B1.2',
+                count: ob12Sum,
+                color: '#166f99'
+            },{
+                stat: 'B.1a',
+                count: b1aSum,
+                color: '#166f99'
+            }, {
+                stat: 'B.3',
+                count: b3Sum,
+                color: '#2185b4'
+            }, {
+                stat: 'O.m.1',
+                count: om1Sum,
                 color: '#319fd2'
             }, {
-                stat: 'Other',
-                count: otherSum,
+                stat: 'B.2a',
+                count: b2aSum,
+                color: '#3eaee2'
+            },
+            {
+                stat: 'O.D1.2',
+                count: od12sum,
+                color: '#319fd2'
+            }, {
+                stat: 'O.m.3',
+                count: om3Sum,
                 color: '#3eaee2'
             }];
             let newarr = _.sortBy(model, (o) => { return o.count });
@@ -782,7 +839,7 @@ exports.totalWeightCountPerFabric = (req, res) => {
 exports.percentOfFabricTotalBlackened = (req, res, next) => {
     // ('Body from Fabrics Total Blackened' + " select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;");
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query("select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
+    pool.query("select  blackened, fabric, count(*) 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
 
 
         if (response !== undefined) {
@@ -849,7 +906,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
 exports.percentOfFabricWeightBlackened = (req, res, next) => {
     // ('Body from Fabrics weight Blackened', req.body.length);
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query("select  blackened, fabric, Round(( sum(weight) / (select sum(weight) from egypt.elephant) * 100),2) as 'weightPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
+    pool.query("select  blackened, fabric, sum(weight) as 'weightPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
         if (response !== undefined) {
 
             categorized = response.map(item => {
