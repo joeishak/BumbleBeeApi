@@ -46,6 +46,9 @@ module.exports = categorizeItemFabric = (item) => {
               case 'NS V':
                   item.fabric = ns5;
                   break;
+                  case 'Fine':
+                  item.fabric = 'Fine';
+                  break;
               default:
                   item.fabric = 'Empty';
                   break;
