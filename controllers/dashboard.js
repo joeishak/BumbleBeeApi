@@ -410,7 +410,7 @@ exports.totalCountPerType = (req, res) => {
     where typeDescription not like'%body sherd%'
     and typeDescription  not like '%decorated%' 
     and  locusnum in (${convertLocusArrayToSqlIn(req.body)}) group by  typeDescription order by 2 desc;`
-    let sql1 = `select distinct typeNum 'type', count(typeDescription) as 'count',
+    let sql1 = `select distinct typeNum 'stat', count(typeDescription) as 'count',
     Round(( count(typeDescription) / (select count(typeDescription) from egypt.elephant where typeDescription not like'%body sherd%'
     and typeDescription  not like '%decorated%' ) ),4) as 'countPercent' from egypt.elephant   
     where typeDescription not like'%body sherd%'
@@ -528,7 +528,7 @@ exports.totalCountPerType = (req, res) => {
             color: '#3eaee2'
         }];
         let newarr = _.sortBy(model, (o) => { return o.count });
-        res.send(newarr.reverse());
+        res.send(response);
     })
 }
 exports.totalWeightPerType = (req, res) => {
@@ -537,7 +537,7 @@ exports.totalWeightPerType = (req, res) => {
     where typeDescription not like'%body sherd%'
     and typeDescription  not like '%decorated%' 
     and  locusnum in (${convertLocusArrayToSqlIn(req.body)}) group by  typeDescription order by 2 desc;`
-    let sql1 = `select distinct typeNum 'type', sum(weight) as 'count',
+    let sql1 = `select distinct typeNum 'stat', sum(weight) as 'count',
     Round(( sum(weight) / (select sum(weight) from egypt.elephant where typeDescription not like'%body sherd%'
     and typeDescription  not like '%decorated%' ) ),4) as 'countPercent' from egypt.elephant   
     where typeDescription not like'%body sherd%'
@@ -557,7 +557,6 @@ exports.totalWeightPerType = (req, res) => {
 
         let od12 = _.groupBy(response, (o) => { if (o.type === 'O.D1.2') { return 'od12' } });
         let om3 = _.groupBy(response, (o) => { if (o.type === 'O.m.3') { return 'om3' } });
-
 
         let emptySum = _.sumBy(empty.null, (o) => { return o.countPercent, o.count });
         let ob1Sum = _.sumBy(OB11.ob11, (o) => { return o.countPercent, o.count });
@@ -641,7 +640,8 @@ exports.totalWeightPerType = (req, res) => {
             color: '#3eaee2'
         }];
         let newarr = _.sortBy(model, (o) => { return o.count });
-        res.send(newarr.reverse());
+        res.send(response);
+        // res.send(newarr.reverse());
     })
 }
 exports.totalWeightCountPerFabric = (req, res) => {
@@ -700,6 +700,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
 
             grouped = _.groupBy(categorized, (o) => { return o.blackened });
 
+            console.log(grouped);
             // for each Key in the Object get the total Percent
             //ext/int/ int-ext / null
             for (let i = 0; i < _.keys(grouped).length; i++) {
@@ -717,23 +718,21 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
 
                 });
                 let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.count });
-                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II') return o.count });
-                let ns3 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS III') return o.count });
+                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.count });
                 // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
-                let ns5 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS V') return o.count });
                 let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.count });
                 switch (key) {
                     case 'ext':
-                        extArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        extArr = [marl || 0, ns1 || 0, ns2 || 0, empty || 0];
                         break;
                     case 'int':
-                        intArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int/ext':
-                        bothArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     default:
-                        nullArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        nullArr = [marl || 0, ns1 || 0, ns2 || 0, empty || 0];
                 }
 
 
@@ -764,23 +763,21 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
 
                 });
                 let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.totalPercent });
-                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II') return o.totalPercent });
-                let ns3 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS III') return o.totalPercent });
+                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.totalPercent });
                 // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
-                let ns5 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS V') return o.totalPercent });
                 let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.totalPercent });
                 switch (key) {
                     case 'ext':
-                        extArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        extArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int':
-                        intArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int/ext':
-                        bothArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     default:
-                        nullArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        nullArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                 }
 
 
@@ -829,23 +826,21 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
 
                 });
                 let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.weight });
-                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II') return o.weight });
-                let ns3 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS III') return o.weight });
+                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.weight });
                 // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
-                let ns5 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS V') return o.weight });
                 let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.weight });
                 switch (key) {
                     case 'ext':
-                        extArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        extArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int':
-                        intArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int/ext':
-                        bothArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     default:
-                        nullArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        nullArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                 }
 
 
@@ -875,23 +870,21 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
 
                 });
                 let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.weightPercent });
-                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II') return o.weightPercent });
-                let ns3 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS III') return o.weightPercent });
+                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.weightPercent });
                 // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
-                let ns5 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS V') return o.weightPercent });
                 let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.weightPercent });
                 switch (key) {
                     case 'ext':
-                        extArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        extArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int':
-                        intArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     case 'int/ext':
-                        bothArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         break;
                     default:
-                        nullArr = [marl || 0, ns1 || 0, ns2 || 0, ns3 || 0, ns5 || 0, empty || 0];
+                        nullArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                 }
 
 
