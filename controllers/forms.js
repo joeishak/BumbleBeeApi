@@ -20,7 +20,7 @@ exports.getTypeNumVariants  = (req,res,next) =>{
         when typenum != 'BS' and typenum != 'UNTY' and typenum !='BSD' and typenum!= 'null' and   right(typenum,1)  REGEXP "[0-9]"  then typenum
     end as 'typenum'
     
-     from egypt.elephant`;
+     from egypt.elephant order by typenum`;
      const variantQuery = ` select distinct     
      case when    typenum != 'BS' and typenum != 'UNTY'  and typenum !='BSD' and typenum!= 'null' and   right(typenum,1)  REGEXP "[a-z, !]"  then right(typenum, 1) end as 'typeVariant'
 
