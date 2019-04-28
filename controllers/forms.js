@@ -10,6 +10,32 @@ pool.connect(err => {
     else console.log('connected to MySQL database:', config.database + 'on host: ' + config.host);
 });
 
+exports.getTypeNumVariants  = (req,res,next) =>{
+    const query = `select distinct case 
+	when typenum = 'BS' then 'BS'
+    when typenum = 'BSD' then 'BSD'
+    when typenum = 'null' then 'null'
+    when typenum = 'UNTY' then 'UNTY'
+    when typenum != 'BS' and typenum != 'UNTY'  and typenum !='BSD' and typenum!= 'null' and   right(typenum,1)  REGEXP "[a-z, !]"  then left(typenum, length(typeNum)-1)
+        when typenum != 'BS' and typenum != 'UNTY' and typenum !='BSD' and typenum!= 'null' and   right(typenum,1)  REGEXP "[0-9]"  then typenum
+    end as 'typenum'
+    
+     from egypt.elephant`;
+     const variantQuery = ` select distinct     
+     case when    typenum != 'BS' and typenum != 'UNTY'  and typenum !='BSD' and typenum!= 'null' and   right(typenum,1)  REGEXP "[a-z, !]"  then right(typenum, 1) end as 'typeVariant'
+
+from egypt.elephant;
+`
+
+     pool.query(query,(err,typeNumResponse,field)=>{
+         if(typeNumResponse){
+             pool.query(variantQuery, (err,variantResponse,fields)=>{
+                 let obj ={typeNum:  typeNumResponse, variants: variantResponse}
+                 res.send(obj);
+             })
+         }
+     })
+}
 exports.writeElephantineForms = (req,res,next) => {
     console.log(req.body.form)
     const form = req.body.form;

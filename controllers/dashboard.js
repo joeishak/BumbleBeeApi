@@ -276,7 +276,7 @@ exports.allElephant = (req, res, next) => {
 // }
 const convertArrayToSqlIn = (list) => {
     let oldText, concatText, newText;
-
+    
     for (let i = 0; i < list.length; i++) {
         let item = list[i];
         newText = parseInt(item.text);

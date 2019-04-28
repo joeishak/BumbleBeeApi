@@ -58,6 +58,6 @@ module.exports = function (app) {
        app.post('/dash/compare/fabric', dashboard.compareFabrics);
 
        app.get('/locusnumbers',dashboard.getLocusNumbers)
-
+       app.get('/typevariants',forms.getTypeNumVariants);
 
 }
