@@ -36,24 +36,26 @@ from egypt.elephant;
          }
      })
 }
-exports.writeElephantineForms = (req,res,next) => {
+exports.writeElephantForms = (req,res,next) => {
     console.log(req.body.form)
     const form = req.body.form;
-    const query = `INSERT INTO egypt.elephantine (locusNum, objectGroupNum, objectNum, numberOfObjects, typeDescription, typeNum, weight, fabric, diameter, preservations, sfCoating, sfTreatment, blackened, incisedDecoration, application, paintedDecoration, comments, photo, processedBy, processedDate, enteredBy, enteredDate, rlNum, sheetNum, lat, lng, room, phase) VALUES ('${form.locusNumber}', '${form.objectGroupNum}', 
-            '${form.objectNum}','${form.numberOfObjects}',
-            '${form.typeDescription}','${form.typeNum}',
-            '${form.weight}','${form.fabric}',
+    const query = `INSERT INTO egypt.elephant (locusNum, objectGroupNum, objectNum, 
+        numberOfObjects, typeDescription, typeNum,variants, weight, fabric, ware, fabricVariant, diameter, preservations, 
+        sfCoating, sfTreatment, blackened, incisedDecoration, application, paintedDecoration,
+         comments,  processedBy, processedDate, enteredBy, enteredDate, rlNum, sheetNum
+         ) VALUES ('${form.locusNumber}', '${form.objectGroupNum}', 
+         '${form.objectNum}','${form.numberOfObjects}','${form.typeDescription}','${form.typeNum}','${form.typeVariant}',
+            '${form.weight}','${form.fabric}','${form.ware}','${form.fabricVariant}',
             '${form.diameter}','${form.preservations}',
             '${form.sfCoating}','${form.sfTreatment}',
             '${form.blackened}','${form.incisedDecoration}',
             '${form.application}','${form.paintedDecoration}',
-            '${form.comments}','${form.photo}',
+            '${form.comments}',
             '${form.processedBy}','${form.processedDate}',
             '${form.enteredBy}','${form.enteredDate}',
-            '${form.rlNum}','${form.sheetNum}',
-            '${form.lat}','${form.lng}',
-            '${form.room}','${form.phase}');`;  
-    // console.log(query);
+            '${form.rlNum}','${form.sheetNum}'
+          );`;  
+    console.log(query);
 
      pool.query(query, (err, response, fields) => {
         // Success
@@ -61,6 +63,7 @@ exports.writeElephantineForms = (req,res,next) => {
             res.send({status: 201, OkPacket: response});
         }
         if (err) {
+            console.log(err);
         }
     });
 }

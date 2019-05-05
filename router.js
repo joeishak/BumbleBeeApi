@@ -42,7 +42,7 @@ module.exports = function (app) {
        app.post('/test', healthy.postRequestTest)
 
        // Forms
-       app.post('/write/elephantine', forms.writeElephantineForms)
+       app.post('/write/elephant', forms.writeElephantForms)
        app.post('/write/khpp', forms.writeToKHPP);
        app.get('/read/khpp', forms.readFromKHPP);
 
