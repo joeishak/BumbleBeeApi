@@ -76,7 +76,7 @@ exports.writeToKHPP = (req, res, next) => {
     const triageArr = req.body.triage;
 
 
-    console.log(sherdsArr);
+    console.log(triageArr);
 
 
     const formQuery = `INSERT INTO egypt.khppform (tagNumber,dueDate,processedBy) VALUES ("${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
@@ -126,7 +126,7 @@ exports.writeToKHPP = (req, res, next) => {
 
         }
         if (err) {
-            res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT' });
+            res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery.toString() });
         }
     });
 
@@ -134,7 +134,7 @@ exports.writeToKHPP = (req, res, next) => {
 
 exports.readFromKHPP = (req, res, next) => {
 
-    const query = `select tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by tagNumber;`;
+    const query = `select id, tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
 
     pool.query(query, (err, response, fields) => {
         if (response) {
@@ -144,4 +144,41 @@ exports.readFromKHPP = (req, res, next) => {
         }
     });
 
+}
+
+exports.deleteFromKHPP = (req, res, next) => {
+
+    // Delete from khppbodysherds table
+    // Delete from khpptriage table
+    // Delete from khppform
+
+    const formId = req.body.formId;
+
+    const deleteAllBodySherdsQuery = `delete from egypt.khppbodysherds where formId = ${formId};`;
+    const deleteAllTriageQuery = `delete from egypt.khpptriage where formId = ${formId};`;
+    const deleteForm = `delete from egypt.khppform where id = ${formId}`;
+
+    // res.send({sherdsQuery: deleteAllBodySherdsQuery, triageQuery: deleteAllTriageQuery, formQuery: deleteForm});
+
+    pool.query(deleteAllBodySherdsQuery, (err, response, fields) => {
+        if (response) {
+            console.log(response);
+            pool.query(deleteAllTriageQuery, (err, response, fields) => {
+                if (response) {
+                    //delete form
+                    pool.query(deleteForm, (err, response, fields) => {
+                        if (response) {
+                            res.send({ status: 201, okPacket: response, message: 'DELETE OKAY' });
+                        } else if (err) {
+                            res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                        }
+                    });
+                } else if (err) {
+                    res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                }
+            });
+        } else if (err) {
+             res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+        }
+    });
 }
