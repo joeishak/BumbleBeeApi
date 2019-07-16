@@ -106,7 +106,19 @@ exports.writeToKHPP = (req, res, next) => {
 
             if (sherdsArr.length !== 0) {
                 const sherdsQueryArr = sherdsArr.map(sherds => {
-                    return `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, comments, sherdType, count,  weight, weightType, notes) VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", "${sherds.comments}", "${sherds.sherdType}", "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", "${sherds.notes}");`;
+                    return `INSERT INTO 
+                    egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                        weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                        diameter, blackening, objectNumber, percentage, quantity, rimsTstc, 
+                        sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn) 
+                        VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                        "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                        "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                        "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                        "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.quantity}", 
+                        "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                        "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                        "${sherds.typeVariant}", "${sherds.isDrawn}");`;
                 });
                 for (let j = 0; j < sherdsQueryArr.length; j++) {
                     const singleSherdQuery = sherdsQueryArr[j];
