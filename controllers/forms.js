@@ -109,13 +109,13 @@ exports.writeToKHPP = (req, res, next) => {
                     return `INSERT INTO 
                     egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
                         weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
-                        diameter, blackening, objectNumber, percentage, quantity, rimsTstc, 
+                        diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
                         sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn) 
                         VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
                         "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
                         "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
                         "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
-                        "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.quantity}", 
+                        "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
                         "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
                         "${sherds.typeFamily}", "${sherds.typeNumber}", 
                         "${sherds.typeVariant}", "${sherds.isDrawn}");`;
