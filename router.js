@@ -46,6 +46,8 @@ module.exports = function (app) {
        app.post('/write/khpp', forms.writeToKHPP);
        app.get('/read/khpp', forms.readFromKHPP);
        app.post('/delete/khpp', forms.deleteFromKHPP);
+       app.post('/edit/khpp', forms.editFromKHPP);
+       app.post('/update/khpp', forms.updateFromKHPP);
 
        //New Queries For Thursday***
        app.post('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);

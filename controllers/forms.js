@@ -110,7 +110,7 @@ exports.writeToKHPP = (req, res, next) => {
                     egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
                         weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
                         diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                        sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn) 
+                        sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
                         VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
                         "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
                         "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
@@ -118,7 +118,7 @@ exports.writeToKHPP = (req, res, next) => {
                         "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
                         "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
                         "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                        "${sherds.typeVariant}", "${sherds.isDrawn}");`;
+                        "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
                 });
                 for (let j = 0; j < sherdsQueryArr.length; j++) {
                     const singleSherdQuery = sherdsQueryArr[j];
@@ -138,7 +138,7 @@ exports.writeToKHPP = (req, res, next) => {
 
         }
         if (err) {
-            res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery.toString() });
+            res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
         }
     });
 
@@ -154,6 +154,145 @@ exports.readFromKHPP = (req, res, next) => {
         } else if (err) {
             res.status(999).send(response);
         }
+    });
+
+}
+
+exports.editFromKHPP = (req, res, next) => {
+    const formId = req.body.formId;
+    const type = req.body.type;
+
+
+    const query = type === 'detailed' ? `SELECT * FROM egypt.khppbodysherds where formId = ${formId};` : `SELECT * FROM egypt.khpptriage where formId = ${formId};`
+
+    pool.query(query, (err, response, fields) => {
+        if (response) {
+            console.log(response);
+            res.send({formId: formId, records: response});
+        } else if (err) {
+            res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+        }
+    });
+}
+
+exports.updateFromKHPP = (req, res, next) => {
+    // console.log(req.body);
+    const form = req.body.form;
+    const sherdsArr = req.body.sherds;
+    const triageArr = req.body.triage;
+    const type = req.body.type;
+    const toDelete = req.body.toDelete;
+    const toAdd = req.body.toAdd;
+
+    const updateFormQuery = `UPDATE egypt.khppform SET tagNumber = '${form.tagNumber}', dueDate = '${form.dueDate}', processedBy = '${form.processedBy}'  WHERE (id = '${form.formId}');`;
+
+
+    pool.query(updateFormQuery, (err, response, fields) => {
+
+        if (err) {
+            /**
+             * Throw Error
+             */
+        } else {
+
+
+            // Check Type if Detailed or Basic
+            if (type === 'detailed') {
+
+                // Delete Detailed Records
+                if (toDelete.length !== 0 || toDelete !== null) {
+                    const deleteQueryArr = toDelete.map(ele => {
+                        if (ele.id == null) {
+                            return '';
+                        } else {
+                            return `DELETE from egypt.khppbodysherds WHERE (id = '${ele.id}');`;
+                        }
+
+                    });
+
+                    for (let i = 0; i < deleteQueryArr.length; i++) {
+                        const eachRecordToDelete = deleteQueryArr[i];
+
+                        if (eachRecordToDelete !== '') {
+                            pool.query(eachRecordToDelete, (err, response, fields) => {
+                                if (err) {
+                                    // Error in deleting
+                                } else {
+                                    // Success in deleting
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // Update, check to see if the detailed shers array is empty
+                if (sherdsArr.length !== 0 || sherdsArr !== null) {
+                    const sherdUpdateQueryArr = sherdsArr.map(ele => {
+                        if (ele.id == null) {
+                            return '';
+                        } else {
+                            return `UPDATE egypt.khppbodysherds SET fabricType = '${ele.fabricType}', surfaceTreatment = '${ele.surfaceTreatment}', count = '${ele.count}', weight = '${ele.weight}', weightType = '${ele.weightType}', notes = '${ele.notes}', bodyOrDiagnostic = '${ele.bodyOrDiagnostic}', ware = '${ele.ware}', decoration = '${ele.decoration}', diameter = '${ele.diameter}', blackening = '${ele.blackening}', objectNumber = '${ele.objectNumber}', percentage = '${ele.percentage}', hasPhoto = '${ele.hasPhoto}', rimsTstc =  '${ele.rimsTstc}', sheetNumber = '${ele.sheetNumber}', typeDescription = '${ele.typeDescription}', typeFamily = '${ele.typeFamily}', typeNumber = '${ele.typeNumber}', typeVariant = '${ele.typeVariant}', isDrawn = '${ele.isDrawn}', burnishing = '${ele.burnishing}' WHERE (id = '${ele.id}');`;
+                        }
+                    });
+
+                    for (let k = 0; k < sherdUpdateQueryArr.length; k++) {
+                        const eachUpdate = sherdUpdateQueryArr[k];
+                        // console.log(eachUpdate);
+                        if (eachUpdate !== '') {
+                            pool.query(eachUpdate, (err, response, fields) => {
+                                if (err) {
+                                    // error
+                                } else {
+                                    // success;
+                                }
+                            });
+                        }
+                    }
+
+                    res.send({response: sherdUpdateQueryArr});
+                }
+
+                // Insert
+                if (toAdd !== 0 || toAdd !== null) {
+                    const sherdsQueryArr = toAdd.map(sherds => {
+                        return `INSERT INTO 
+                        egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                            weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                            diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
+                            VALUES ("${form.formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                            "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                            "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                            "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                            "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                            "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                            "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+                    });
+
+                    for (let w = 0; w < sherdsQueryArr.length; w++) {
+                        const element = sherdsQueryArr[w];
+
+                        pool.query(element, (err, res, fields) => {
+                            if (err) {
+                                // error
+                            } else {
+                                // success
+                            }
+                        });
+                        
+                    }
+                }
+
+   
+
+            } 
+
+            if (type === 'basic') {
+
+            }
+        }
+
     });
 
 }
