@@ -62,5 +62,6 @@ module.exports = function (app) {
 
        app.get('/locusnumbers',dashboard.getLocusNumbers)
        app.get('/typevariants',forms.getTypeNumVariants);
+       app.post('/khpp/excel/export', forms.getRecordsForExcel);
 
 }

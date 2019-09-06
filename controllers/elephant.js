@@ -305,7 +305,6 @@ exports.locusLatLangs = (req,res) =>{
         res.status(200).send(response);
     })
 }
-
 exports.getDetailTotals = (req,res,next) => {
  
     let totalArtifactSql = "Select count(*) 'totalArtifacts' from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +");";

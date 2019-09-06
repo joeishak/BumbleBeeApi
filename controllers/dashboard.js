@@ -339,7 +339,6 @@ exports.locusLatLangs = (req, res) => {
         res.send(response);
     })
 }
-
 exports.getDetailTotals = (req, res, next) => {
 
     let totalArtifactSql = "Select count(*) 'totalArtifacts' from egypt.elephant where left(locusNum,5) in (" + convertArrayToSqlIn(req.body) + ");";
@@ -380,13 +379,6 @@ exports.getDetailTable = (req, res, next) => {
         res.send(response);
     })
 }
-
-
-
-
-
-//New Dashboard PArameterized Queries
-
 exports.getLocusNumbers = (req, res, next) => {
     let eleSql = "select distinct locusnum from egypt.elephant;"
     let khppSql = "select distinct tagNumber from egypt.khppform ";
@@ -902,8 +894,6 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
         }
     })
 }
-
-//Panel4
 exports.compareFabrics = (req, res, next) => {
     // ('Body from Surface Comparison', req.body.length);
 
@@ -985,7 +975,6 @@ exports.compareFabrics = (req, res, next) => {
         })
     });
 }
-//Panel 5
 exports.getKHPPFabricQuery = (req, res, next) => {
     //// console.log(' 1 Body from KHPP Fabric', req.body);
 
@@ -1006,7 +995,6 @@ exports.getKHPPFabricQuery = (req, res, next) => {
         res.send(response);
     })
 }
-//Panel 6
 exports.getKHPPWeightBlackenedQuery = (req, res, next) => {
 
     //// console.log('Blackend Wieight', req.body);

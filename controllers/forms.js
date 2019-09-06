@@ -3,12 +3,27 @@
 let mySql = require('mysql');
 let config = require('../jrconfig');
 
+function convertFilterList(arrayList) {
+    return "'" + arrayList.join("\', \'") + "' ";
+}
 
 const pool = new mySql.createConnection(config)
 pool.connect(err => {
     if (err) console.log(err);
     else console.log('connected to MySQL database:', config.database + 'on host: ' + config.host);
 });
+
+exports.getRecordsForExcel = (req, res, next) => {
+    const detailedTagArray = convertFilterList(req.body.detailed);
+    const basicTagArray = req.body.basic;
+
+    const detailedRecordsQuery = `SELECT f.tagNumber, f.dueDate, f.processedBy, bs.formId, bs.fabricType, bs.surfaceTreatment, bs.\`count\`, bs.weight, bs.weightType, bs.notes, bs.bodyOrDiagnostic, bs.ware, bs.decoration, bs.diameter, bs.blackening, bs.objectNumber, bs.percentage, bs.hasPhoto, bs.rimsTstc, bs.sheetNumber, bs.typeDescription from egypt.khppform f, egypt.khppbodysherds bs where f.id = bs.formid AND f.tagNumber IN` + ` (${detailedTagArray}) ` +  `;`;
+    const basicRecordsQuery = ``;
+
+    pool.query(detailedRecordsQuery, (err, response, field) => {
+        res.send({data: response});
+    });  
+}
 
 exports.getTypeNumVariants = (req, res, next) => {
     const query = `select distinct case 
