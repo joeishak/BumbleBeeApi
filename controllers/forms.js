@@ -15,13 +15,27 @@ pool.connect(err => {
 
 exports.getRecordsForExcel = (req, res, next) => {
     const detailedTagArray = convertFilterList(req.body.detailed);
-    const basicTagArray = req.body.basic;
+    const basicTagArray = convertFilterList(req.body.basic);
 
-    const detailedRecordsQuery = `SELECT f.tagNumber, f.dueDate, f.processedBy, bs.formId, bs.fabricType, bs.surfaceTreatment, bs.\`count\`, bs.weight, bs.weightType, bs.notes, bs.bodyOrDiagnostic, bs.ware, bs.decoration, bs.diameter, bs.blackening, bs.objectNumber, bs.percentage, bs.hasPhoto, bs.rimsTstc, bs.sheetNumber, bs.typeDescription from egypt.khppform f, egypt.khppbodysherds bs where f.id = bs.formid AND f.tagNumber IN` + ` (${detailedTagArray}) ` +  `;`;
-    const basicRecordsQuery = ``;
+    const detailedRecordsQuery = `SELECT f.tagNumber, f.dueDate, f.processedBy, bs.fabricType, bs.surfaceTreatment, bs.\`count\`, bs.weight, bs.weightType, bs.notes, bs.bodyOrDiagnostic, bs.ware, bs.decoration, bs.diameter, bs.blackening, bs.objectNumber, bs.percentage, bs.hasPhoto, bs.rimsTstc, bs.sheetNumber, bs.typeDescription from egypt.khppform f, egypt.khppbodysherds bs where f.id = bs.formid AND f.tagNumber IN` + ` (${detailedTagArray}) ` +  `;`;
+    const basicRecordsQuery = `SELECT f.tagNumber, f.dueDate, f.processedBy, t.fabricType, t.bodyOrDiagnostic, t.\`count\`, t.weight, t.weightType, t.comments, t.notes, t.sherdType from egypt.khppform f, egypt.khpptriage t where f.id = t.formid AND f.tagNumber IN` + ` (${basicTagArray}) ` +  `;`;
 
     pool.query(detailedRecordsQuery, (err, response, field) => {
-        res.send({data: response});
+        if (err) {
+            res.send({error: err});
+        } else {
+            pool.query(basicRecordsQuery, (error, resp, field) => {
+                if (error) {
+                    res.send({error: err});
+                } else {
+                    const responses = {
+                        detailed: response,
+                        basic: resp
+                    };
+                    res.send({data: responses});
+                }
+            });
+        }
     });  
 }
 
