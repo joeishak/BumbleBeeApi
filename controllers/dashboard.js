@@ -12,11 +12,14 @@ let config = require('../jrconfig.js');
 // let SiteLocations = require('../data/')
 let categorized, grouped, accumulated = [];
 // const pool = new mySql.createConnection(config)
-
-// pool.connect(err => {
-//     if (err) console.log('Error connecting to MySql');
-//     else console.log('');
-// })
+let env = require('../config');
+var pool = mySql.createPool({
+    connectionLimit: 10,
+    host: env.host,
+    user: env.user,
+    password: env.password,
+    database: env.database
+});
 
 exports.allElephant = (req, res, next) => {
     pool.query("select * from egypt.elephantine where left(locusNum,5) in (" + convertArrayToSqlIn(req.body) + ");", (err, response, fields) => {
@@ -383,16 +386,32 @@ exports.getLocusNumbers = (req, res, next) => {
     let eleSql = "select distinct locusnum from egypt.elephant;"
     let khppSql = "select distinct tagNumber from egypt.khppform ";
 
-
-    pool.query(eleSql, (err, response, field) => {
-
-        pool.query(khppSql, (err, khpp, field) => {
-            res.send({
-                ele: response,
-                khpp: khpp
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(eleSql, (err, response, field) => {
+                if (response) {
+                    pool.query(khppSql, (err, khpp, field) => {
+                        conn.release();
+                        console.log('CONNECTION RELEASED getLocusNumbers');
+                        if (khpp) {
+                            res.send({
+                                ele: response,
+                                khpp: khpp
+                            })
+                        }
+                    })
+                }
             })
-        })
-    })
+        }   
+    });
+
+
+
 }
 exports.totalCountPerType = (req, res) => {
     //// console.log('Body from type count', req.body.length);
@@ -679,113 +698,125 @@ exports.totalWeightCountPerFabric = (req, res) => {
 exports.percentOfFabricTotalBlackened = (req, res, next) => {
     // ('Body from Fabrics Total Blackened' + " select  blackened, fabric, Round(( count(blackened) / (select count(blackened) from egypt.elephant) * 100),2) as 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;");
     let intArr, extArr, nullArr, bothArr = [];
-    pool.query("select  blackened, fabric, count(*) 'count' , Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
 
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query("select  blackened, fabric, count(*) 'count' , Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
 
-        if (response !== undefined) {
-
-            categorized = response.map(item => {
-                categorizeItemFabric(item);
-                return item;
-            });
-
-
-            grouped = _.groupBy(categorized, (o) => { return o.blackened });
-
-            // console.log(grouped);
-            // for each Key in the Object get the total Percent
-            //ext/int/ int-ext / null
-            for (let i = 0; i < _.keys(grouped).length; i++) {
-                let newItem;
-                let key = _.keys(grouped)[i];
-
-                // //(key);
-                let marl = _.sumBy(grouped[key], (o) => {
-                    if (o.fabric === 'Marl') {
-                        if (!o.count) {
-                            return 0;
+                conn.release();
+                console.log('CONNECTION RELEASED percentOfFabricTotalBlackened');
+                if (response !== undefined) {
+        
+                    categorized = response.map(item => {
+                        categorizeItemFabric(item);
+                        return item;
+                    });
+        
+        
+                    grouped = _.groupBy(categorized, (o) => { return o.blackened });
+        
+                    // console.log(grouped);
+                    // for each Key in the Object get the total Percent
+                    //ext/int/ int-ext / null
+                    for (let i = 0; i < _.keys(grouped).length; i++) {
+                        let newItem;
+                        let key = _.keys(grouped)[i];
+        
+                        // //(key);
+                        let marl = _.sumBy(grouped[key], (o) => {
+                            if (o.fabric === 'Marl') {
+                                if (!o.count) {
+                                    return 0;
+                                }
+                                return o.count;
+                            };
+        
+                        });
+                        let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.count });
+                        let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.count });
+                        // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
+                        let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.count });
+                        switch (key) {
+                            case 'ext':
+                                extArr = [marl || 0, ns1 || 0, ns2 || 0, empty || 0];
+                                break;
+                            case 'int':
+                                intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
+                                break;
+                            case 'int/ext':
+                                bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
+                                break;
+                            default:
+                                nullArr = [marl || 0, ns1 || 0, ns2 || 0, empty || 0];
                         }
-                        return o.count;
+        
+        
+        
+        
+                    }
+                    let values = {
+                        exterior: extArr,
+                        interior: intArr,
+                        both: bothArr,
+                        empty: nullArr
                     };
-
-                });
-                let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.count });
-                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.count });
-                // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
-                let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.count });
-                switch (key) {
-                    case 'ext':
-                        extArr = [marl || 0, ns1 || 0, ns2 || 0, empty || 0];
-                        break;
-                    case 'int':
-                        intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
-                        break;
-                    case 'int/ext':
-                        bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
-                        break;
-                    default:
-                        nullArr = [marl || 0, ns1 || 0, ns2 || 0, empty || 0];
-                }
-
-
-
-
-            }
-            let values = {
-                exterior: extArr,
-                interior: intArr,
-                both: bothArr,
-                empty: nullArr
-            };
-
-            // for each Key in the Object get the total Percent
-            //ext/int/ int-ext / null
-            for (let i = 0; i < _.keys(grouped).length; i++) {
-                let newItem;
-                let key = _.keys(grouped)[i];
-
-                // //(key);
-                let marl = _.sumBy(grouped[key], (o) => {
-                    if (o.fabric === 'Marl') {
-                        if (!o.totalPercent) {
-                            return 0;
+        
+                    // for each Key in the Object get the total Percent
+                    //ext/int/ int-ext / null
+                    for (let i = 0; i < _.keys(grouped).length; i++) {
+                        let newItem;
+                        let key = _.keys(grouped)[i];
+        
+                        // //(key);
+                        let marl = _.sumBy(grouped[key], (o) => {
+                            if (o.fabric === 'Marl') {
+                                if (!o.totalPercent) {
+                                    return 0;
+                                }
+                                return o.totalPercent;
+                            };
+        
+                        });
+                        let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.totalPercent });
+                        let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.totalPercent });
+                        // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
+                        let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.totalPercent });
+                        switch (key) {
+                            case 'ext':
+                                extArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
+                                break;
+                            case 'int':
+                                intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
+                                break;
+                            case 'int/ext':
+                                bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
+                                break;
+                            default:
+                                nullArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
                         }
-                        return o.totalPercent;
-                    };
-
-                });
-                let ns1 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS I') return o.totalPercent });
-                let ns2 = _.sumBy(grouped[key], (o) => { if (o.fabric === 'NS II+') return o.totalPercent });
-                // let ns4 = _.sumBy(grouped[key],(o) =>{return o.fabric === 'NS IV'}); 
-                let empty = _.sumBy(grouped[key], (o) => { if (o.fabric === 'Empty') return o.totalPercent });
-                switch (key) {
-                    case 'ext':
-                        extArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
-                        break;
-                    case 'int':
-                        intArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
-                        break;
-                    case 'int/ext':
-                        bothArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
-                        break;
-                    default:
-                        nullArr = [marl || 0, ns1 || 0, ns2 || 0,  empty || 0];
+        
+        
+        
+        
+                    }
+                    let placeholders = {
+                        exterior: extArr,
+                        interior: intArr,
+                        both: bothArr,
+                        empty: nullArr
+                    }
+        
+                    res.send([values, placeholders]);
                 }
+            })
+        }   
+    });
 
-
-
-
-            }
-            let placeholders = {
-                exterior: extArr,
-                interior: intArr,
-                both: bothArr,
-                empty: nullArr
-            }
-
-            res.send([values, placeholders]);
-        }
-    })
 }
 exports.percentOfFabricWeightBlackened = (req, res, next) => {
     // ('Body from Fabrics weight Blackened', req.body.length);

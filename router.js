@@ -13,11 +13,7 @@ const red = require('./controllers/red');
 const forms = require('./controllers/forms');
 
 module.exports = function (app) {
-       // app.post('/signup', authentication.signup);
-       // app.post('/signin', requireSignIn, authentication.signin);
-       // app.get('/img', images.testImages);
-       // app.get('/puppy', images.getImages);
-       //ETL
+
        app.get('/health', healthy.getHealth);
        app.get('/fossils/reds', etl.redData);
        app.get('/fossils/elephant', etl.elephantData);

@@ -3,16 +3,6 @@
 let mySql = require('mysql');
 let env = require('../config');
 
-function convertFilterList(arrayList) {
-    return "'" + arrayList.join("\', \'") + "' ";
-}
-
-// const pool = new mySql.createConnection(config)
-// pool.connect(err => {
-//     if (err) console.log(err);
-//     else console.log('connected to MySQL database:', config.database + 'on host: ' + config.host);
-// });
-
 var pool = mySql.createPool({
     connectionLimit: 10,
     host: env.host,
@@ -21,31 +11,43 @@ var pool = mySql.createPool({
     database: env.database
 });
 
+
 exports.getRecordsForExcel = (req, res, next) => {
     const detailedTagArray = convertFilterList(req.body.detailed);
     const basicTagArray = convertFilterList(req.body.basic);
-
     const detailedRecordsQuery = `SELECT f.tagNumber, f.dueDate, f.processedBy, bs.fabricType, bs.surfaceTreatment, bs.\`count\`, bs.weight, bs.weightType, bs.notes, bs.bodyOrDiagnostic, bs.ware, bs.decoration, bs.diameter, bs.blackening, bs.objectNumber, bs.percentage, bs.hasPhoto, bs.rimsTstc, bs.sheetNumber, bs.typeDescription from egypt.khppform f, egypt.khppbodysherds bs where f.id = bs.formid AND f.tagNumber IN` + ` (${detailedTagArray}) ` +  `;`;
     const basicRecordsQuery = `SELECT f.tagNumber, f.dueDate, f.processedBy, t.fabricType, t.bodyOrDiagnostic, t.\`count\`, t.weight, t.weightType, t.comments, t.notes, t.sherdType from egypt.khppform f, egypt.khpptriage t where f.id = t.formid AND f.tagNumber IN` + ` (${basicTagArray}) ` +  `;`;
 
-    pool.query(detailedRecordsQuery, (err, response, field) => {
-        if (err) {
-            res.send({error: err});
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
         } else {
-            pool.query(basicRecordsQuery, (error, resp, field) => {
-                if (error) {
+            pool.query(detailedRecordsQuery, (err, response, field) => {
+     
+                if (err) {
                     res.send({error: err});
                 } else {
-                    const responses = {
-                        detailed: response,
-                        basic: resp
-                    };
-                    res.send({data: responses});
+                    pool.query(basicRecordsQuery, (error, resp, field) => {
+                        conn.release();
+                        console.log('CONNECTION RELEASED getRecordsForExcel');
+                        if (error) {
+                            res.send({error: err});
+                        } else {
+                            const responses = {
+                                detailed: response,
+                                basic: resp
+                            };
+                            res.send({data: responses});
+                        }
+                    });
                 }
-            });
+            });  
         }
-    });  
-}
+    });
+};
 
 exports.getTypeNumVariants = (req, res, next) => {
     const query = `select distinct case 
@@ -60,17 +62,29 @@ exports.getTypeNumVariants = (req, res, next) => {
      from egypt.elephant order by typenum`;
     const variantQuery = ` select distinct     
      case when  typenum != 'BS' and typenum != 'UNTY'  and typenum !='BSD' and typenum!= 'null' and   right(typenum,1)  REGEXP "[a-z, !]"  then right(typenum, 1) end as 'typeVariant'
-from egypt.elephant;
-`
+from egypt.elephant;`
 
-    pool.query(query, (err, typeNumResponse, field) => {
-        if (typeNumResponse) {
-            pool.query(variantQuery, (err, variantResponse, fields) => {
-                let obj = { typeNum: typeNumResponse, variants: variantResponse }
-                res.send(obj);
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(query, (err, typeNumResponse, field) => {
+                if (typeNumResponse) {
+                    pool.query(variantQuery, (err, variantResponse, fields) => {
+                        conn.release();
+                        console.log('CONNECTION RELEASED getTypeNumVariants');
+                        let obj = { typeNum: typeNumResponse, variants: variantResponse }
+                        res.send(obj);
+                    })
+                }
             })
-        }
-    })
+        }   
+    });
+    
+    
 }
 
 exports.writeElephantForms = (req, res, next) => {
@@ -92,16 +106,22 @@ exports.writeElephantForms = (req, res, next) => {
             '${form.enteredBy}','${form.enteredDate}',
             '${form.rlNum}','${form.sheetNum}'
           );`;
-    // console.log(query);
 
-    pool.query(query, (err, response, fields) => {
-        // Success
-        if (response) {
-            res.send({ status: 201, OkPacket: response });
-        }
-        if (err) {
-            // console.log(err);
-        }
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(query, (err, response, fields) => {
+                conn.release();
+                console.log('CONNECTION RELEASED writeElephantForms');
+                if (response) {
+                    res.send({ status: 201, OkPacket: response });
+                }
+            });
+        }   
     });
 }
 
@@ -111,73 +131,82 @@ exports.writeToKHPP = (req, res, next) => {
     const form = req.body.form;
     const sherdsArr = req.body.sherds;
     const triageArr = req.body.triage;
-
-
-    // console.log(triageArr);
-
-
+    
     const formQuery = `INSERT INTO egypt.khppform (tagNumber,dueDate,processedBy) VALUES ("${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
 
-    pool.query(formQuery, (err, response, fields) => {
-        // Success
-        if (response) {
-            // console.log(response);
-            const formId = response.insertId;
-            // // TRIAGE
-
-            // Insert on bOdy
-            const triageQueryArr = triageArr.map(triage => {
-                return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
-            });
-            for (let i = 0; i < triageQueryArr.length; i++) {
-                const singleTriageQuery = triageQueryArr[i];
-                pool.query(singleTriageQuery, (err, response, fields) => {
-                    if (response) {
-                        // console.log("HOOOOOYYYY")
-                    }
-                    if (err) {
-                        // console.log("OH NOOOO!!")
-                    }
-                });
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
             }
-
-            if (sherdsArr.length !== 0) {
-                const sherdsQueryArr = sherdsArr.map(sherds => {
-                    return `INSERT INTO 
-                    egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
-                        weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
-                        diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                        sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
-                        VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
-                        "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
-                        "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
-                        "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
-                        "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
-                        "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
-                        "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                        "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
-                });
-                for (let j = 0; j < sherdsQueryArr.length; j++) {
-                    const singleSherdQuery = sherdsQueryArr[j];
-                    pool.query(singleSherdQuery, (err, response, fields) => {
-                        if (response) {
-                            // console.log("YESSS")
-                        }
-                        if (err) {
-                            // console.log(err)
-                        }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(formQuery, (err, response, fields) => {
+                // Success
+                if (response) {
+                    // console.log(response);
+                    const formId = response.insertId;
+                    // // TRIAGE
+        
+                    // Insert on bOdy
+                    const triageQueryArr = triageArr.map(triage => {
+                        return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
                     });
+                    for (let i = 0; i < triageQueryArr.length; i++) {
+                        const singleTriageQuery = triageQueryArr[i];
+                        pool.query(singleTriageQuery, (err, response, fields) => {
+                            if (response) {
+                                // console.log("HOOOOOYYYY")
+                            }
+                            if (err) {
+                                // console.log("OH NOOOO!!")
+                            }
+                        });
+                    }
+        
+                    if (sherdsArr.length !== 0) {
+                        const sherdsQueryArr = sherdsArr.map(sherds => {
+                            return `INSERT INTO 
+                            egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                                weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
+                                VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+                        });
+                        for (let j = 0; j < sherdsQueryArr.length; j++) {
+                            const singleSherdQuery = sherdsQueryArr[j];
+                            pool.query(singleSherdQuery, (err, response, fields) => {
+                                if (response) {
+                                    // console.log("YESSS")
+                                }
+                                if (err) {
+                                    // console.log(err)
+                                }
+                            });
+                        }
+                    }
+                    conn.release();
+                    console.log('CONNECTION RELEASED writeToKHPP');
+        
+                    res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+        
                 }
-            }
-
-
-            res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
-
-        }
-        if (err) {
-            res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
-        }
+                if (err) {
+                    res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
+                }
+            }); 
+        }   
     });
+
+
+
 
 }
 
@@ -185,44 +214,28 @@ exports.readFromKHPP = (req, res, next) => {
 
     const query = `select id, tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
 
-    pool.getConnection((connectionError, conn) => {
-        if (connectionError) {
-            if (connectionError instanceof Errors.NotFound) {
-                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
-            }
-            
-            console.log(connectionError);
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
-            
-        } else {
-            pool.query(query, (queryError, response, fields) => {
-                conn.release();
-                if (!queryError) {
-                    res.send(response);
-                } 
-        
-            });
-        }   
-    });
-
-    
-
 };
 
 exports.editFromKHPP = (req, res, next) => {
     const formId = req.body.formId;
     const type = req.body.type;
-
-
     const query = type === 'detailed' ? `SELECT * FROM egypt.khppbodysherds where formId = ${formId};` : `SELECT * FROM egypt.khpptriage where formId = ${formId};`
 
-    pool.query(query, (err, response, fields) => {
-        if (response) {
-            // console.log(response);
-            res.send({formId: formId, records: response});
-        } else if (err) {
-            res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
-        }
+    
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(query, (queryError, response, fields) => {
+                conn.release();
+                if (!queryError) {
+                    res.send({formId: formId, records: response});
+                }
+            });
+        }   
     });
 }
 
@@ -237,114 +250,127 @@ exports.updateFromKHPP = (req, res, next) => {
 
     const updateFormQuery = `UPDATE egypt.khppform SET tagNumber = '${form.tagNumber}', dueDate = '${form.dueDate}', processedBy = '${form.processedBy}'  WHERE (id = '${form.formId}');`;
 
-
-    pool.query(updateFormQuery, (err, response, fields) => {
-
-        if (err) {
-            /**
-             * Throw Error
-             */
-        } else {
-
-
-            // Check Type if Detailed or Basic
-            if (type === 'detailed') {
-
-                // Delete Detailed Records
-                if (toDelete.length !== 0 || toDelete !== null) {
-                    const deleteQueryArr = toDelete.map(ele => {
-                        if (ele.id == null) {
-                            return '';
-                        } else {
-                            return `DELETE from egypt.khppbodysherds WHERE (id = '${ele.id}');`;
-                        }
-
-                    });
-
-                    for (let i = 0; i < deleteQueryArr.length; i++) {
-                        const eachRecordToDelete = deleteQueryArr[i];
-
-                        if (eachRecordToDelete !== '') {
-                            pool.query(eachRecordToDelete, (err, response, fields) => {
-                                if (err) {
-                                    // Error in deleting
-                                } else {
-                                    // Success in deleting
-                                }
-                            });
-                        }
-                    }
-                }
-
-                // Update, check to see if the detailed shers array is empty
-                if (sherdsArr.length !== 0 || sherdsArr !== null) {
-                    const sherdUpdateQueryArr = sherdsArr.map(ele => {
-                        if (ele.id == null) {
-                            return '';
-                        } else {
-                            return `UPDATE egypt.khppbodysherds SET fabricType = '${ele.fabricType}', surfaceTreatment = '${ele.surfaceTreatment}', count = '${ele.count}', weight = '${ele.weight}', weightType = '${ele.weightType}', notes = '${ele.notes}', bodyOrDiagnostic = '${ele.bodyOrDiagnostic}', ware = '${ele.ware}', decoration = '${ele.decoration}', diameter = '${ele.diameter}', blackening = '${ele.blackening}', objectNumber = '${ele.objectNumber}', percentage = '${ele.percentage}', hasPhoto = '${ele.hasPhoto}', rimsTstc =  '${ele.rimsTstc}', sheetNumber = '${ele.sheetNumber}', typeDescription = '${ele.typeDescription}', typeFamily = '${ele.typeFamily}', typeNumber = '${ele.typeNumber}', typeVariant = '${ele.typeVariant}', isDrawn = '${ele.isDrawn}', burnishing = '${ele.burnishing}' WHERE (id = '${ele.id}');`;
-                        }
-                    });
-
-                    for (let k = 0; k < sherdUpdateQueryArr.length; k++) {
-                        const eachUpdate = sherdUpdateQueryArr[k];
-                        // console.log(eachUpdate);
-                        if (eachUpdate !== '') {
-                            pool.query(eachUpdate, (err, response, fields) => {
-                                if (err) {
-                                    // error
-                                } else {
-                                    // success;
-                                }
-                            });
-                        }
-                    }
-
-                    res.send({response: sherdUpdateQueryArr});
-                }
-
-                // Insert
-                if (toAdd !== 0 || toAdd !== null) {
-                    const sherdsQueryArr = toAdd.map(sherds => {
-                        return `INSERT INTO 
-                        egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
-                            weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
-                            diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
-                            VALUES ("${form.formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
-                            "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
-                            "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
-                            "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
-                            "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
-                            "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
-                            "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
-                    });
-
-                    for (let w = 0; w < sherdsQueryArr.length; w++) {
-                        const element = sherdsQueryArr[w];
-
-                        pool.query(element, (err, res, fields) => {
-                            if (err) {
-                                // error
-                            } else {
-                                // success
-                            }
-                        });
-                        
-                    }
-                }
-
-   
-
-            } 
-
-            if (type === 'basic') {
-
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
             }
-        }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(updateFormQuery, (err, response, fields) => {
 
+                if (err) {
+                    /**
+                     * Throw Error
+                     */
+                } else {
+        
+        
+                    // Check Type if Detailed or Basic
+                    if (type === 'detailed') {
+        
+                        // Delete Detailed Records
+                        if (toDelete.length !== 0 || toDelete !== null) {
+                            const deleteQueryArr = toDelete.map(ele => {
+                                if (ele.id == null) {
+                                    return '';
+                                } else {
+                                    return `DELETE from egypt.khppbodysherds WHERE (id = '${ele.id}');`;
+                                }
+        
+                            });
+        
+                            for (let i = 0; i < deleteQueryArr.length; i++) {
+                                const eachRecordToDelete = deleteQueryArr[i];
+        
+                                if (eachRecordToDelete !== '') {
+                                    pool.query(eachRecordToDelete, (err, response, fields) => {
+                                        if (err) {
+                                            // Error in deleting
+                                        } else {
+                                            // Success in deleting
+                                        }
+                                    });
+                                }
+                            }
+                        }
+        
+                        // Update, check to see if the detailed shers array is empty
+                        if (sherdsArr.length !== 0 || sherdsArr !== null) {
+                            const sherdUpdateQueryArr = sherdsArr.map(ele => {
+                                if (ele.id == null) {
+                                    return '';
+                                } else {
+                                    return `UPDATE egypt.khppbodysherds SET fabricType = '${ele.fabricType}', surfaceTreatment = '${ele.surfaceTreatment}', count = '${ele.count}', weight = '${ele.weight}', weightType = '${ele.weightType}', notes = '${ele.notes}', bodyOrDiagnostic = '${ele.bodyOrDiagnostic}', ware = '${ele.ware}', decoration = '${ele.decoration}', diameter = '${ele.diameter}', blackening = '${ele.blackening}', objectNumber = '${ele.objectNumber}', percentage = '${ele.percentage}', hasPhoto = '${ele.hasPhoto}', rimsTstc =  '${ele.rimsTstc}', sheetNumber = '${ele.sheetNumber}', typeDescription = '${ele.typeDescription}', typeFamily = '${ele.typeFamily}', typeNumber = '${ele.typeNumber}', typeVariant = '${ele.typeVariant}', isDrawn = '${ele.isDrawn}', burnishing = '${ele.burnishing}' WHERE (id = '${ele.id}');`;
+                                }
+                            });
+        
+                            for (let k = 0; k < sherdUpdateQueryArr.length; k++) {
+                                const eachUpdate = sherdUpdateQueryArr[k];
+                                // console.log(eachUpdate);
+                                if (eachUpdate !== '') {
+                                    pool.query(eachUpdate, (err, response, fields) => {
+                                        if (err) {
+                                            // error
+                                        } else {
+                                            // success;
+                                        }
+                                    });
+                                }
+                            }
+        
+                            res.send({response: sherdUpdateQueryArr});
+                   
+                        }
+        
+                        // Insert
+                        if (toAdd !== 0 || toAdd !== null) {
+                            const sherdsQueryArr = toAdd.map(sherds => {
+                                return `INSERT INTO 
+                                egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                                    weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                    diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                    sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
+                                    VALUES ("${form.formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                    "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                    "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                    "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                    "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                    "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                    "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                    "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+                            });
+        
+                            for (let w = 0; w < sherdsQueryArr.length; w++) {
+                                const element = sherdsQueryArr[w];
+        
+                                pool.query(element, (err, res, fields) => {
+                                    if (err) {
+                                        // error
+                                    } else {
+                                        // success
+                                    }
+                                });
+                                
+                            }
+                        }
+
+                        conn.release();
+        
+           
+        
+                    } 
+        
+                    if (type === 'basic') {
+        
+                    }
+                }
+        
+            });
+        }   
     });
+
+
 
 }
 
@@ -362,25 +388,41 @@ exports.deleteFromKHPP = (req, res, next) => {
 
     // res.send({sherdsQuery: deleteAllBodySherdsQuery, triageQuery: deleteAllTriageQuery, formQuery: deleteForm});
 
-    pool.query(deleteAllBodySherdsQuery, (err, response, fields) => {
-        if (response) {
-            // console.log(response);
-            pool.query(deleteAllTriageQuery, (err, response, fields) => {
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(deleteAllBodySherdsQuery, (err, response, fields) => {
                 if (response) {
-                    //delete form
-                    pool.query(deleteForm, (err, response, fields) => {
+                    // console.log(response);
+                    pool.query(deleteAllTriageQuery, (err, response, fields) => {
                         if (response) {
-                            res.send({ status: 201, okPacket: response, message: 'DELETE OKAY' });
+                            //delete form
+                            pool.query(deleteForm, (err, response, fields) => {
+                                conn.release();
+                                if (response) {
+                                    res.send({ status: 201, okPacket: response, message: 'DELETE OKAY' });
+                                } else if (err) {
+                                    res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                                }
+                            });
                         } else if (err) {
                             res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
                         }
                     });
                 } else if (err) {
-                    res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                     res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
                 }
             });
-        } else if (err) {
-             res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
-        }
+        }   
     });
+
+
+}
+
+function convertFilterList(arrayList) {
+    return "'" + arrayList.join("\', \'") + "' ";
 }
