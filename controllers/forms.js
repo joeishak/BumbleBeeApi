@@ -212,7 +212,7 @@ exports.writeToKHPP = (req, res, next) => {
 
 exports.readFromKHPP = (req, res, next) => {
 
-    const query = `select id, tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
+    const query = `select f.id, f.tagNumber, f.dueDate, f.processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
 
     pool.getConnection((connectionError, conn) => {
         if (connectionError) {
