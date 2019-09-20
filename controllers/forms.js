@@ -214,6 +214,21 @@ exports.readFromKHPP = (req, res, next) => {
 
     const query = `select id, tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
 
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(query, (err, response, fields) => {
+                conn.release();
+                if (response) {
+                    res.send(response);
+                }
+            });
+        }   
+    });
 };
 
 exports.editFromKHPP = (req, res, next) => {
