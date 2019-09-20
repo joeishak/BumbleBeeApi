@@ -10,12 +10,12 @@ let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../jrconfig.js');
 
 let categorized, grouped, accumulated = [];
-const pool = new mySql.createConnection(config)
-// Check for Errors
-pool.connect(err => {
-    if (err) console.log(err);
-    else console.log('success');
-})
+// const pool = new mySql.createConnection(config)
+// // Check for Errors
+// pool.connect(err => {
+//     if (err) console.log(err);
+//     else console.log('success');
+// })
 
 exports.allElephant = (req, res, next) => {
     pool.query('select * from egypt.elephantine;', (err, response, fields) => {

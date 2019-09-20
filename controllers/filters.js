@@ -7,12 +7,12 @@ let _ = require('lodash');
 let config = require('../jrconfig.js');
 
 let categorized, grouped, accumulated = [];
-const pool = new mySql.createConnection(config)
-// Check for Errors
-pool.connect(err => {
-    if (err) console.log(err);
-    else console.log('success');
-})
+// const pool = new mySql.createConnection(config)
+// // Check for Errors
+// pool.connect(err => {
+//     if (err) console.log(err);
+//     else console.log('success');
+// })
 
 exports.getElephantLocusGroups = (req,res) =>{
     let sql = "select distinct left(locusnum,5) from egypt.elephant;";

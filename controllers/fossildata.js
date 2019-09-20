@@ -15,12 +15,12 @@ let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../db.config');
 
 
-const pool = new mySql.createConnection(config.joe)
-// Check for Errors
-pool.connect(err => {
-    if (err) console.log(err);
-    else console.log('success');
-})
+// const pool = new mySql.createConnection(config.joe)
+// // Check for Errors
+// pool.connect(err => {
+//     if (err) console.log(err);
+//     else console.log('success');
+// })
 
 exports.postRequestTest = (req,res,next) =>{
     // console.log('Request', req.body);

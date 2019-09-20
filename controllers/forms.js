@@ -1,16 +1,24 @@
 
 /**Node Packages and Global Object - Declaration / Instantiation */
 let mySql = require('mysql');
-let config = require('../jrconfig');
+let env = require('../config');
 
 function convertFilterList(arrayList) {
     return "'" + arrayList.join("\', \'") + "' ";
 }
 
-const pool = new mySql.createConnection(config)
-pool.connect(err => {
-    if (err) console.log(err);
-    else console.log('connected to MySQL database:', config.database + 'on host: ' + config.host);
+// const pool = new mySql.createConnection(config)
+// pool.connect(err => {
+//     if (err) console.log(err);
+//     else console.log('connected to MySQL database:', config.database + 'on host: ' + config.host);
+// });
+
+var pool = mySql.createPool({
+    connectionLimit: 10,
+    host: env.host,
+    user: env.user,
+    password: env.password,
+    database: env.database
 });
 
 exports.getRecordsForExcel = (req, res, next) => {
@@ -177,15 +185,29 @@ exports.readFromKHPP = (req, res, next) => {
 
     const query = `select id, tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
 
-    pool.query(query, (err, response) => {
-        if (response) {
-            res.status(200).send(response);
-        } else if (err) {
-            res.status(989).send({error: err});
-        }
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            
+            console.log(connectionError);
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+            
+        } else {
+            pool.query(query, (queryError, response, fields) => {
+                conn.release();
+                if (!queryError) {
+                    res.send(response);
+                } 
+        
+            });
+        }   
     });
 
-}
+    
+
+};
 
 exports.editFromKHPP = (req, res, next) => {
     const formId = req.body.formId;

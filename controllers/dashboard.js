@@ -11,12 +11,12 @@ let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../jrconfig.js');
 // let SiteLocations = require('../data/')
 let categorized, grouped, accumulated = [];
-const pool = new mySql.createConnection(config)
-// Check for Errors
-pool.connect(err => {
-    // if (err) //('Error connecting to MySql');
-    // else // //('');
-})
+// const pool = new mySql.createConnection(config)
+
+// pool.connect(err => {
+//     if (err) console.log('Error connecting to MySql');
+//     else console.log('');
+// })
 
 exports.allElephant = (req, res, next) => {
     pool.query("select * from egypt.elephantine where left(locusNum,5) in (" + convertArrayToSqlIn(req.body) + ");", (err, response, fields) => {

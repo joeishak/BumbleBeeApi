@@ -14,12 +14,12 @@ let _ = require('lodash');
 let categorizeItemFabric = require('../services/categorizeFabrics.js');
 let config = require('../jrconfig');
 
-const pool = new mySql.createConnection(config)
-// Check for Errors
-pool.connect(err => {
-    if (err) console.log(err);
-    else console.log('success');
-})
+// const pool = new mySql.createConnection(config)
+// // Check for Errors
+// pool.connect(err => {
+//     if (err) console.log(err);
+//     else console.log('success');
+// })
 
 
 // ETL From JSon to MYSql

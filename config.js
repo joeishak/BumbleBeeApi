@@ -1,4 +1,8 @@
-module.exports = {
-    secret: 'a23l2j0jsodjfsd0fsdf09',
-    url: 'mongodb://localhost:27017'
+module.exports = 
+{
+    "user": "sa",
+    "password": "ft3t7pgz",
+    "host": "demo.infosol.com",
+    "port": "3306",
+    "database": 'egypt'
 }
