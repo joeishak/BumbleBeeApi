@@ -1,10 +1,10 @@
-let authentication = require('./controllers/authentication');
-const passportService = require('./services/passport');
-const passport = require('passport');
+// let authentication = require('./controllers/authentication');
+// const passportService = require('./services/passport');
+// const passport = require('passport');
 
-const requireAuth = passport.authenticate('jwt', { session: false });
-const requireSignIn = passport.authenticate('local', { session: false });
-const images = require('./controllers/images');
+// const requireAuth = passport.authenticate('jwt', { session: false });
+// const requireSignIn = passport.authenticate('local', { session: false });
+// const images = require('./controllers/images');
 const etl = require('./controllers/etl');
 const healthy = require('./controllers/healthy');
 const elephant = require('./controllers/elephant');
@@ -13,11 +13,12 @@ const red = require('./controllers/red');
 const forms = require('./controllers/forms');
 
 module.exports = function (app) {
-       app.post('/signup', authentication.signup);
-       app.post('/signin', requireSignIn, authentication.signin);
-       app.get('/img', images.testImages);
-       app.get('/puppy', images.getImages);
+       // app.post('/signup', authentication.signup);
+       // app.post('/signin', requireSignIn, authentication.signin);
+       // app.get('/img', images.testImages);
+       // app.get('/puppy', images.getImages);
        //ETL
+       app.get('/health', healthy.getHealth);
        app.get('/fossils/reds', etl.redData);
        app.get('/fossils/elephant', etl.elephantData);
        app.get('/fossils/khppsherds',etl.khppBodySherds)

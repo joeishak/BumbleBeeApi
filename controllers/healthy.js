@@ -10,6 +10,10 @@ exports.postRequestTest = (req,res,next) =>{
     res.send({message: 'successfull', request: req.body})
 }
 
+exports.getHealth = (req,res) => {
+    res.send({message: 'connected'});
+}
+
 
 
 
