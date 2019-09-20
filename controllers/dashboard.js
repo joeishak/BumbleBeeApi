@@ -692,7 +692,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
 
             grouped = _.groupBy(categorized, (o) => { return o.blackened });
 
-            console.log(grouped);
+            // console.log(grouped);
             // for each Key in the Object get the total Percent
             //ext/int/ int-ext / null
             for (let i = 0; i < _.keys(grouped).length; i++) {

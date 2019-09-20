@@ -9,7 +9,7 @@ let router = require('./router.js');
 // DB Setup
 // mongoose.connect('mongodb://localhost:27017/auth');
 //App Set Up
-app.use(morgan('combined'));
+app.use(morgan('tiny'));
 // app.use(bodyParser.json({typer:'*/*'}));
 
 app.use(bodyParser.json({limit: '50mb'}));

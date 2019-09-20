@@ -66,7 +66,7 @@ from egypt.elephant;
 }
 
 exports.writeElephantForms = (req, res, next) => {
-    console.log(req.body.form)
+    // console.log(req.body.form)
     const form = req.body.form;
     const query = `INSERT INTO egypt.elephant (locusNum, objectGroupNum, objectNum, 
         numberOfObjects, typeDescription, typeNum,variants, weight, fabric, ware, fabricVariant, diameter, preservations, 
@@ -84,7 +84,7 @@ exports.writeElephantForms = (req, res, next) => {
             '${form.enteredBy}','${form.enteredDate}',
             '${form.rlNum}','${form.sheetNum}'
           );`;
-    console.log(query);
+    // console.log(query);
 
     pool.query(query, (err, response, fields) => {
         // Success
@@ -92,20 +92,20 @@ exports.writeElephantForms = (req, res, next) => {
             res.send({ status: 201, OkPacket: response });
         }
         if (err) {
-            console.log(err);
+            // console.log(err);
         }
     });
 }
 
 exports.writeToKHPP = (req, res, next) => {
 
-    console.log(req.body);
+    // console.log(req.body);
     const form = req.body.form;
     const sherdsArr = req.body.sherds;
     const triageArr = req.body.triage;
 
 
-    console.log(triageArr);
+    // console.log(triageArr);
 
 
     const formQuery = `INSERT INTO egypt.khppform (tagNumber,dueDate,processedBy) VALUES ("${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
@@ -113,7 +113,7 @@ exports.writeToKHPP = (req, res, next) => {
     pool.query(formQuery, (err, response, fields) => {
         // Success
         if (response) {
-            console.log(response);
+            // console.log(response);
             const formId = response.insertId;
             // // TRIAGE
 
@@ -125,10 +125,10 @@ exports.writeToKHPP = (req, res, next) => {
                 const singleTriageQuery = triageQueryArr[i];
                 pool.query(singleTriageQuery, (err, response, fields) => {
                     if (response) {
-                        console.log("HOOOOOYYYY")
+                        // console.log("HOOOOOYYYY")
                     }
                     if (err) {
-                        console.log("OH NOOOO!!")
+                        // console.log("OH NOOOO!!")
                     }
                 });
             }
@@ -153,10 +153,10 @@ exports.writeToKHPP = (req, res, next) => {
                     const singleSherdQuery = sherdsQueryArr[j];
                     pool.query(singleSherdQuery, (err, response, fields) => {
                         if (response) {
-                            console.log("YESSS")
+                            // console.log("YESSS")
                         }
                         if (err) {
-                            console.log(err)
+                            // console.log(err)
                         }
                     });
                 }
@@ -177,11 +177,11 @@ exports.readFromKHPP = (req, res, next) => {
 
     const query = `select id, tagNumber, dueDate, processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
 
-    pool.query(query, (err, response, fields) => {
+    pool.query(query, (err, response) => {
         if (response) {
             res.status(200).send(response);
         } else if (err) {
-            res.status(999).send(response);
+            res.status(989).send({error: err});
         }
     });
 
@@ -196,7 +196,7 @@ exports.editFromKHPP = (req, res, next) => {
 
     pool.query(query, (err, response, fields) => {
         if (response) {
-            console.log(response);
+            // console.log(response);
             res.send({formId: formId, records: response});
         } else if (err) {
             res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
@@ -342,7 +342,7 @@ exports.deleteFromKHPP = (req, res, next) => {
 
     pool.query(deleteAllBodySherdsQuery, (err, response, fields) => {
         if (response) {
-            console.log(response);
+            // console.log(response);
             pool.query(deleteAllTriageQuery, (err, response, fields) => {
                 if (response) {
                     //delete form

@@ -23,7 +23,7 @@ pool.connect(err => {
 })
 
 exports.postRequestTest = (req,res,next) =>{
-    console.log('Request', req.body);
+    // console.log('Request', req.body);
     res.send({message: 'successfull', request: req.body})
 }
 

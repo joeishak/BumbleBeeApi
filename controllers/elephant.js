@@ -81,7 +81,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
                 let newItem;
                 let key = _.keys(grouped)[i];
 
-                console.log(key);
+                // console.log(key);
                 let marl = _.sumBy(grouped[key],(o) =>{if(o.fabric === 'Marl') {
                     if(!o.totalPercent){
                         return 0;
@@ -145,7 +145,7 @@ exports.percentOfFabricWeightBlackened = (req, res, next) => {
                 let newItem;
                 let key = _.keys(grouped)[i];
 
-                console.log(key);
+                // console.log(key);
                 let marl = _.sumBy(grouped[key],(o) =>{if(o.fabric === 'Marl') {
                     if(!o.weightPercent){
                         return 0;
@@ -202,7 +202,7 @@ exports.totalCountPerType = (req, res) => {
         let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.countPercent});
         let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.countPercent});
 
-        console.log(bodySum);
+        // console.log(bodySum);
         let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
         let otherSum = 100 - totalDefinedSum;
         let model = [{
@@ -243,7 +243,7 @@ exports.totalWeightPerType = (req, res) => {
         let hemSum= _.sumBy(hem.hemcups, (o)=> {return o.weightPercent});
         let flattenedSum = _.sumBy(flattened.flatenedbase, (o)=> {return o.weightPercent});
 
-        console.log(bodySum);
+        // console.log(bodySum);
         let totalDefinedSum = bodySum + rimSum + hemSum + flattenedSum;
         let otherSum = 100 - totalDefinedSum;
         let model = [{
@@ -293,15 +293,15 @@ const convertArrayToSqlIn = (list) => {
 
         oldText = newText;
     }
-    console.log(concatText)
+    // console.log(concatText)
     return concatText;
 }
 exports.locusLatLangs = (req,res) =>{
-    console.log(req.body);
+    // console.log(req.body);
   
     let sql = "Select distinct left(locusNum,5) 'locusgroup', lat, lang from egypt.elephant where left(locusNum,5) in ("+convertArrayToSqlIn(req.body) +");" ;
     pool.query(sql, (err, response, fields) => {
-        console.log(response);
+        // console.log(response);
         res.status(200).send(response);
     })
 }
