@@ -397,7 +397,6 @@ exports.getLocusNumbers = (req, res, next) => {
                 if (response) {
                     pool.query(khppSql, (err, khpp, field) => {
                         conn.release();
-                        console.log('CONNECTION RELEASED getLocusNumbers');
                         if (khpp) {
                             res.send({
                                 ele: response,
@@ -709,7 +708,7 @@ exports.percentOfFabricTotalBlackened = (req, res, next) => {
             pool.query("select  blackened, fabric, count(*) 'count' , Round(( count(weight) / (select count(weight) from egypt.elephant)),2) as 'totalPercent'  from egypt.elephant where locusNum in (" + convertLocusArrayToSqlIn(req.body) + ") group by blackened,fabric order by 1,2 asc;", (err, response, fields) => {
 
                 conn.release();
-                console.log('CONNECTION RELEASED percentOfFabricTotalBlackened');
+
                 if (response !== undefined) {
         
                     categorized = response.map(item => {
