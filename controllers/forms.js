@@ -4,7 +4,7 @@ let mySql = require('mysql');
 let env = require('../config');
 
 var pool = mySql.createPool({
-    connectionLimit: 10,
+    connectionLimit: 1000,
     host: env.host,
     user: env.user,
     password: env.password,
@@ -125,6 +125,141 @@ exports.writeElephantForms = (req, res, next) => {
     });
 }
 
+// exports.sepcialWriteToKhpp = (req, res, next) => {
+//     const form = req.body.form;
+//     const sherdsArr = req.body.sherds;
+
+//     // res.send({data: sherdsArr, tagNumber: form.tagNumber});
+
+//     const getTagNumberQuery = `select id from khppform where tagNumber = "${form.tagNumber}";`
+
+//     pool.getConnection((connectionError, conn) => {
+//         if (connectionError) {
+//             if (connectionError instanceof Errors.NotFound) {
+//                 return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+//             }
+//             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+//         } else {
+//             pool.query(getTagNumberQuery, (err,response,fields) => {
+                
+//                 if (err) {
+//                     res.send({error: err});
+//                 } else {
+//                     if (response) {
+             
+//                         if (response.length !== 0) {
+
+//                             const formId = response[0].id;
+
+//                             // OLD FORM WITH EXISTING TAG NUMBER IN FORM
+//                             // res.send({data: {formId: formId, sherds: sherdsArr}});
+
+//                             pool.getConnection((connectionError, conn) => {
+//                                 if (connectionError) {
+//                                     if (connectionError instanceof Errors.NotFound) {
+//                                         return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+//                                     }
+//                                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+//                                 } else {
+                                    
+//                                     if (sherdsArr.length !== 0) {
+//                                         const sherdsQueryArr = sherdsArr.map(sherds => {
+//                                             return `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, weight, weightType, notes, bodyOrDiagnostic, ware, decoration, diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) VALUES ("${parseInt(formId,0)}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", "${sherds.typeFamily}", "${sherds.typeNumber}", "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+//                                         });
+//                                         for (let j = 0; j < sherdsQueryArr.length; j++) {
+//                                             const singleSherdQuery = sherdsQueryArr[j];
+//                                             pool.query(singleSherdQuery, (err, response, fields) => {
+//                                                 if (response) {
+//                                                     // console.log("YESSS")
+//                                                 }
+//                                                 if (err) {
+//                                                     // console.log(err)
+//                                                 }
+//                                             });
+//                                         }
+                                        
+//                                         res.send({data: {formId: formId, sherdsQuery: sherdsQueryArr}});
+
+//                                     }
+//                                     conn.release();
+//                                     // console.log('CONNECTION RELEASED writeToKHPP');
+//                                     // res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+//                                 }
+//                             });
+
+//                         } else {
+//                             // NEW FORM
+//                             // res.send({data: {formId: 'NEWFORMID', sherds: sherdsArr}});
+//                             const formQuery = `INSERT INTO egypt.khppform (tagNumber,dueDate,processedBy) VALUES ("${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
+
+//                             pool.getConnection((connectionError, conn) => {
+//                                 if (connectionError) {
+//                                     if (connectionError instanceof Errors.NotFound) {
+//                                         return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+//                                     }
+//                                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+//                                 } else {
+//                                     pool.query(formQuery, (err, response, fields) => {
+//                                         // Success
+//                                         if (response) {
+//                                             // console.log(response);
+//                                             const formId = response.insertId;
+                                    
+//                                             if (sherdsArr.length !== 0) {
+//                                                 const sherdsQueryArr = sherdsArr.map(sherds => {
+//                                                     return `INSERT INTO 
+//                                                     egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+//                                                         weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+//                                                         diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+//                                                         sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
+//                                                         VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+//                                                         "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+//                                                         "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+//                                                         "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+//                                                         "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+//                                                         "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+//                                                         "${sherds.typeFamily}", "${sherds.typeNumber}", 
+//                                                         "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+//                                                 });
+//                                                 for (let j = 0; j < sherdsQueryArr.length; j++) {
+//                                                     const singleSherdQuery = sherdsQueryArr[j];
+//                                                     pool.query(singleSherdQuery, (err, response, fields) => {
+//                                                         if (response) {
+//                                                             // console.log("YESSS")
+//                                                         }
+//                                                         if (err) {
+//                                                             // console.log(err)
+//                                                         }
+//                                                     });
+//                                                 }
+//                                             }
+
+
+//                                             conn.release();
+//                                             // console.log('CONNECTION RELEASED writeToKHPP');
+
+//                                             // res.send({formQueries: triageQueryArr, detailedQueries: sherdsQueryArr})
+                                
+//                                             res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+                                
+//                                         }
+//                                         if (err) {
+//                                             res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
+//                                         }
+//                                     }); 
+//                                 }   
+//                             });
+
+//                         }
+
+//                     }
+//                 }
+               
+//             });
+//         }
+//     });
+// }
+
 exports.writeToKHPP = (req, res, next) => {
 
     // console.log(req.body);
@@ -141,67 +276,150 @@ exports.writeToKHPP = (req, res, next) => {
             }
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
         } else {
-            pool.query(formQuery, (err, response, fields) => {
-                // Success
-                if (response) {
-                    // console.log(response);
-                    const formId = response.insertId;
-                    // // TRIAGE
-        
-                    // Insert on bOdy
-                    const triageQueryArr = triageArr.map(triage => {
-                        return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
-                    });
-                    for (let i = 0; i < triageQueryArr.length; i++) {
-                        const singleTriageQuery = triageQueryArr[i];
-                        pool.query(singleTriageQuery, (err, response, fields) => {
+
+            // check to see if the tagNumber is already in the KHPP Form table, if so use that and insert the sherdsArray or triage array
+            const getTagNumberQuery = `select id from khppform where tagNumber = "${form.tagNumber}";`
+
+            pool.query(getTagNumberQuery, (_error, _response) => {
+                if (_response) {
+                    if (_response.length !== 0) {
+                        // OLD
+                        let oldFormId = _response[0].id;
+                        pool.query(formQuery, (err, response, fields) => {
+                            // Success
                             if (response) {
-                                // console.log("HOOOOOYYYY")
+                                // console.log(response);
+                                let formId = oldFormId
+                                // // TRIAGE
+                    
+                                // Insert on bOdy
+                                const triageQueryArr = triageArr.map(triage => {
+                                    return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", 
+                                    "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
+                                });
+                                for (let i = 0; i < triageQueryArr.length; i++) {
+                                    const singleTriageQuery = triageQueryArr[i];
+                                    pool.query(singleTriageQuery, (err, response, fields) => {
+                                        if (response) {
+                                            // console.log("HOOOOOYYYY")
+                                        }
+                                        if (err) {
+                                            // console.log("OH NOOOO!!")
+                                        }
+                                    });
+                                }
+                    
+                                if (sherdsArr.length !== 0) {
+                                    const sherdsQueryArr = sherdsArr.map(sherds => {
+                                        return `INSERT INTO 
+                                        egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                                            weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                            diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
+                                            VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                            "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                            "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                            "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                            "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                            "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                            "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+                                    });
+                                    for (let j = 0; j < sherdsQueryArr.length; j++) {
+                                        const singleSherdQuery = sherdsQueryArr[j];
+                                        pool.query(singleSherdQuery, (err, response, fields) => {
+                                            if (response) {
+                                                // console.log("YESSS")
+                                            }
+                                            if (err) {
+                                                // console.log(err)
+                                            }
+                                        });
+                                    }
+                                }
+                                conn.release();
+                                console.log('CONNECTION RELEASED writeToKHPP');
+                    
+                                res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+                    
                             }
                             if (err) {
-                                // console.log("OH NOOOO!!")
+                                res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
                             }
-                        });
-                    }
-        
-                    if (sherdsArr.length !== 0) {
-                        const sherdsQueryArr = sherdsArr.map(sherds => {
-                            return `INSERT INTO 
-                            egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
-                                weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
-                                diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                                sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
-                                VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
-                                "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
-                                "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
-                                "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
-                                "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
-                                "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
-                                "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                                "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
-                        });
-                        for (let j = 0; j < sherdsQueryArr.length; j++) {
-                            const singleSherdQuery = sherdsQueryArr[j];
-                            pool.query(singleSherdQuery, (err, response, fields) => {
-                                if (response) {
-                                    // console.log("YESSS")
+                        }); 
+                    } else {
+                        //NEW 
+                        pool.query(formQuery, (err, response, fields) => {
+                            // Success
+                            if (response) {
+                                // console.log(response);
+                                const formId = response.insertId;
+                                // // TRIAGE
+                    
+                                // Insert on bOdy
+                                const triageQueryArr = triageArr.map(triage => {
+                                    return `INSERT INTO egypt.khpptriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", 
+                                    "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
+                                });
+                                for (let i = 0; i < triageQueryArr.length; i++) {
+                                    const singleTriageQuery = triageQueryArr[i];
+                                    pool.query(singleTriageQuery, (err, response, fields) => {
+                                        if (response) {
+                                            // console.log("HOOOOOYYYY")
+                                        }
+                                        if (err) {
+                                            // console.log("OH NOOOO!!")
+                                        }
+                                    });
                                 }
-                                if (err) {
-                                    // console.log(err)
+                    
+                                if (sherdsArr.length !== 0) {
+                                    const sherdsQueryArr = sherdsArr.map(sherds => {
+                                        return `INSERT INTO 
+                                        egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                                            weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                            diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
+                                            VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                            "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                            "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                            "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                            "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                            "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                            "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
+                                    });
+                                    for (let j = 0; j < sherdsQueryArr.length; j++) {
+                                        const singleSherdQuery = sherdsQueryArr[j];
+                                        pool.query(singleSherdQuery, (err, response, fields) => {
+                                            if (response) {
+                                                // console.log("YESSS")
+                                            }
+                                            if (err) {
+                                                // console.log(err)
+                                            }
+                                        });
+                                    }
                                 }
-                            });
-                        }
+                                conn.release();
+                                console.log('CONNECTION RELEASED writeToKHPP');
+                    
+                                res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+                    
+                            }
+                            if (err) {
+                                res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
+                            }
+                        }); 
                     }
-                    conn.release();
-                    console.log('CONNECTION RELEASED writeToKHPP');
-        
-                    res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
-        
+                } else {
+                    res.send({error: _error})
                 }
-                if (err) {
-                    res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
-                }
-            }); 
+
+            });
+
+
+
         }   
     });
 
