@@ -9,7 +9,7 @@ let elephantData = require('../data/elephant');
 let redData = require('../data/reds');
 let _ = require('lodash');
 let categorizeItemFabric = require('../services/categorizeFabrics.js');
-let config = require('../jrconfig');
+// let config = require('../jrconfig');
 
 
 // const pool = new mySql.createConnection(config)

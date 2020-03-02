@@ -8,7 +8,7 @@ let mySql = require('mysql');
 
 let _ = require('lodash');
 let categorizeItemFabric = require('../services/categorizeFabrics.js');
-let config = require('../jrconfig.js');
+// let config = require('../jrconfig.js');
 // let SiteLocations = require('../data/')
 let categorized, grouped, accumulated = [];
 // const pool = new mySql.createConnection(config)
