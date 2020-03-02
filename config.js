@@ -2,7 +2,7 @@ module.exports =
 {
     "user": "sa",
     "password": "ft3t7pgz",
-    "host": "192.168.1.6",
+    "host": "demo.infosol.com",
     "port": "3306",
     "database": 'egypt'
 }
