@@ -556,7 +556,7 @@ exports.writeToElephantine = (req, res, next) => {
                                         egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
                                             weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
                                             diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate) 
+                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate, houseNumber, roomNumber) 
                                             VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
                                             "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
                                             "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
@@ -564,7 +564,7 @@ exports.writeToElephantine = (req, res, next) => {
                                             "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
                                             "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
                                             "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}");`;
+                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}, "${sherds.houseNumber}", "${sherds.roomNumber}"");`;
                                     });
                                     for (let j = 0; j < sherdsQueryArr.length; j++) {
                                         const singleSherdQuery = sherdsQueryArr[j];
@@ -620,7 +620,7 @@ exports.writeToElephantine = (req, res, next) => {
                                         egypt.elebodysherds(formid, fabricType, surfaceTreatment, count, 
                                             weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
                                             diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate) 
+                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate, houseNumber, roomNumber) 
                                             VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
                                             "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
                                             "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
@@ -628,7 +628,7 @@ exports.writeToElephantine = (req, res, next) => {
                                             "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
                                             "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
                                             "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}");`;
+                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}", "${sherds.houseNumber}", "${sherds.roomNumber}");`;
                                     });
                                     for (let j = 0; j < sherdsQueryArr.length; j++) {
                                         const singleSherdQuery = sherdsQueryArr[j];
@@ -728,7 +728,7 @@ exports.updateFromElephantine = (req, res, next) => {
     const toDelete = req.body.toDelete;
     const toAdd = req.body.toAdd;
 
-    const updateFormQuery = `UPDATE egypt.eleform SET tagNumber = '${form.tagNumber}', dueDate = '${form.dueDate}', processedBy = '${form.processedBy}', sherdDate = '${form.sherdDate}'  WHERE (id = '${form.formId}');`;
+    const updateFormQuery = `UPDATE egypt.eleform SET tagNumber = '${form.tagNumber}', dueDate = '${form.dueDate}', processedBy = '${form.processedBy}', sherdDate = '${form.sherdDate}', houseNumber = '${form.houseNumber}', roomNumber = '${form.roomNumber}'  WHERE (id = '${form.formId}');`;
 
     pool.getConnection((connectionError, conn) => {
         if (connectionError) {
@@ -781,7 +781,7 @@ exports.updateFromElephantine = (req, res, next) => {
                                 if (ele.id == null) {
                                     return '';
                                 } else {
-                                    return `UPDATE egypt.elebodysherds SET fabricType = '${ele.fabricType}', surfaceTreatment = '${ele.surfaceTreatment}', count = '${ele.count}', weight = '${ele.weight}', weightType = '${ele.weightType}', notes = '${ele.notes}', bodyOrDiagnostic = '${ele.bodyOrDiagnostic}', ware = '${ele.ware}', decoration = '${ele.decoration}', diameter = '${ele.diameter}', blackening = '${ele.blackening}', objectNumber = '${ele.objectNumber}', percentage = '${ele.percentage}', hasPhoto = '${ele.hasPhoto}', rimsTstc =  '${ele.rimsTstc}', sheetNumber = '${ele.sheetNumber}', typeDescription = '${ele.typeDescription}', typeFamily = '${ele.typeFamily}', typeNumber = '${ele.typeNumber}', typeVariant = '${ele.typeVariant}', isDrawn = '${ele.isDrawn}', burnishing = '${ele.burnishing}', sherdDate = '${ele.sherdDate}' WHERE (id = '${ele.id}');`;
+                                    return `UPDATE egypt.elebodysherds SET fabricType = '${ele.fabricType}', surfaceTreatment = '${ele.surfaceTreatment}', count = '${ele.count}', weight = '${ele.weight}', weightType = '${ele.weightType}', notes = '${ele.notes}', bodyOrDiagnostic = '${ele.bodyOrDiagnostic}', ware = '${ele.ware}', decoration = '${ele.decoration}', diameter = '${ele.diameter}', blackening = '${ele.blackening}', objectNumber = '${ele.objectNumber}', percentage = '${ele.percentage}', hasPhoto = '${ele.hasPhoto}', rimsTstc =  '${ele.rimsTstc}', sheetNumber = '${ele.sheetNumber}', typeDescription = '${ele.typeDescription}', typeFamily = '${ele.typeFamily}', typeNumber = '${ele.typeNumber}', typeVariant = '${ele.typeVariant}', isDrawn = '${ele.isDrawn}', burnishing = '${ele.burnishing}', sherdDate = '${ele.sherdDate}', houseNumber = '${ele.houseNumber}', roomNumber = '${ele.roomNumber}' WHERE (id = '${ele.id}');`;
                                 }
                             });
         
@@ -810,7 +810,7 @@ exports.updateFromElephantine = (req, res, next) => {
                                 egypt.elebodysherds(formid, fabricType, surfaceTreatment, count, 
                                     weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
                                     diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-                                    sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate) 
+                                    sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate, houseNumber, roomNumber) 
                                     VALUES ("${form.formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
                                     "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
                                     "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
@@ -818,7 +818,7 @@ exports.updateFromElephantine = (req, res, next) => {
                                     "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
                                     "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
                                     "${sherds.typeFamily}", "${sherds.typeNumber}", 
-                                    "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}");`;
+                                    "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}", "${sherds.houseNumber}", "${sherds.roomNumber}");`;
                             });
         
                             for (let w = 0; w < sherdsQueryArr.length; w++) {
