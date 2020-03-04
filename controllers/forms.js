@@ -11,7 +11,9 @@ var pool = mySql.createPool({
     database: env.database
 });
 
-
+/**
+ * KHPP
+ */
 exports.getRecordsForExcel = (req, res, next) => {
     const detailedTagArray = convertFilterList(req.body.detailed);
     const basicTagArray = convertFilterList(req.body.basic);
@@ -48,7 +50,9 @@ exports.getRecordsForExcel = (req, res, next) => {
         }
     });
 };
-
+/**
+ * KHPP
+ */
 exports.getTypeNumVariants = (req, res, next) => {
     const query = `select distinct case 
 	when typenum = 'BS' then 'BS'
@@ -86,180 +90,9 @@ from egypt.elephant;`
     
     
 }
-
-exports.writeElephantForms = (req, res, next) => {
-    // console.log(req.body.form)
-    const form = req.body.form;
-    const query = `INSERT INTO egypt.elephant (locusNum, objectGroupNum, objectNum, 
-        numberOfObjects, typeDescription, typeNum,variants, weight, fabric, ware, fabricVariant, diameter, preservations, 
-        sfCoating, sfTreatment, blackened, incisedDecoration, application, paintedDecoration,
-         comments,  processedBy, processedDate, enteredBy, enteredDate, rlNum, sheetNum
-         ) VALUES ('${form.locusNumber}', '${form.objectGroupNum}', 
-         '${form.objectNum}','${form.numberOfObjects}','${form.typeDescription}','${form.typeNum}','${form.typeVariant}',
-            '${form.weight}','${form.fabric}','${form.ware}','${form.fabricVariant}',
-            '${form.diameter}','${form.preservations}',
-            '${form.sfCoating}','${form.sfTreatment}',
-            '${form.blackened}','${form.incisedDecoration}',
-            '${form.application}','${form.paintedDecoration}',
-            '${form.comments}',
-            '${form.processedBy}','${form.processedDate}',
-            '${form.enteredBy}','${form.enteredDate}',
-            '${form.rlNum}','${form.sheetNum}'
-          );`;
-
-    pool.getConnection((connectionError, conn) => {
-        if (connectionError) {
-            if (connectionError instanceof Errors.NotFound) {
-                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
-            }
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
-        } else {
-            pool.query(query, (err, response, fields) => {
-                conn.release();
-                console.log('CONNECTION RELEASED writeElephantForms');
-                if (response) {
-                    res.send({ status: 201, OkPacket: response });
-                }
-            });
-        }   
-    });
-}
-
-// exports.sepcialWriteToKhpp = (req, res, next) => {
-//     const form = req.body.form;
-//     const sherdsArr = req.body.sherds;
-
-//     // res.send({data: sherdsArr, tagNumber: form.tagNumber});
-
-//     const getTagNumberQuery = `select id from khppform where tagNumber = "${form.tagNumber}";`
-
-//     pool.getConnection((connectionError, conn) => {
-//         if (connectionError) {
-//             if (connectionError instanceof Errors.NotFound) {
-//                 return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
-//             }
-//             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
-//         } else {
-//             pool.query(getTagNumberQuery, (err,response,fields) => {
-                
-//                 if (err) {
-//                     res.send({error: err});
-//                 } else {
-//                     if (response) {
-             
-//                         if (response.length !== 0) {
-
-//                             const formId = response[0].id;
-
-//                             // OLD FORM WITH EXISTING TAG NUMBER IN FORM
-//                             // res.send({data: {formId: formId, sherds: sherdsArr}});
-
-//                             pool.getConnection((connectionError, conn) => {
-//                                 if (connectionError) {
-//                                     if (connectionError instanceof Errors.NotFound) {
-//                                         return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
-//                                     }
-//                                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
-//                                 } else {
-                                    
-//                                     if (sherdsArr.length !== 0) {
-//                                         const sherdsQueryArr = sherdsArr.map(sherds => {
-//                                             return `INSERT INTO egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, weight, weightType, notes, bodyOrDiagnostic, ware, decoration, diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) VALUES ("${parseInt(formId,0)}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", "${sherds.typeFamily}", "${sherds.typeNumber}", "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
-//                                         });
-//                                         for (let j = 0; j < sherdsQueryArr.length; j++) {
-//                                             const singleSherdQuery = sherdsQueryArr[j];
-//                                             pool.query(singleSherdQuery, (err, response, fields) => {
-//                                                 if (response) {
-//                                                     // console.log("YESSS")
-//                                                 }
-//                                                 if (err) {
-//                                                     // console.log(err)
-//                                                 }
-//                                             });
-//                                         }
-                                        
-//                                         res.send({data: {formId: formId, sherdsQuery: sherdsQueryArr}});
-
-//                                     }
-//                                     conn.release();
-//                                     // console.log('CONNECTION RELEASED writeToKHPP');
-//                                     // res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
-//                                 }
-//                             });
-
-//                         } else {
-//                             // NEW FORM
-//                             // res.send({data: {formId: 'NEWFORMID', sherds: sherdsArr}});
-//                             const formQuery = `INSERT INTO egypt.khppform (tagNumber,dueDate,processedBy) VALUES ("${form.tagNumber}","${form.dueDate}","${form.processedBy}");`;
-
-//                             pool.getConnection((connectionError, conn) => {
-//                                 if (connectionError) {
-//                                     if (connectionError instanceof Errors.NotFound) {
-//                                         return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
-//                                     }
-//                                     return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
-//                                 } else {
-//                                     pool.query(formQuery, (err, response, fields) => {
-//                                         // Success
-//                                         if (response) {
-//                                             // console.log(response);
-//                                             const formId = response.insertId;
-                                    
-//                                             if (sherdsArr.length !== 0) {
-//                                                 const sherdsQueryArr = sherdsArr.map(sherds => {
-//                                                     return `INSERT INTO 
-//                                                     egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
-//                                                         weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
-//                                                         diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
-//                                                         sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing) 
-//                                                         VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
-//                                                         "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
-//                                                         "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
-//                                                         "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
-//                                                         "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
-//                                                         "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
-//                                                         "${sherds.typeFamily}", "${sherds.typeNumber}", 
-//                                                         "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}");`;
-//                                                 });
-//                                                 for (let j = 0; j < sherdsQueryArr.length; j++) {
-//                                                     const singleSherdQuery = sherdsQueryArr[j];
-//                                                     pool.query(singleSherdQuery, (err, response, fields) => {
-//                                                         if (response) {
-//                                                             // console.log("YESSS")
-//                                                         }
-//                                                         if (err) {
-//                                                             // console.log(err)
-//                                                         }
-//                                                     });
-//                                                 }
-//                                             }
-
-
-//                                             conn.release();
-//                                             // console.log('CONNECTION RELEASED writeToKHPP');
-
-//                                             // res.send({formQueries: triageQueryArr, detailedQueries: sherdsQueryArr})
-                                
-//                                             res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
-                                
-//                                         }
-//                                         if (err) {
-//                                             res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
-//                                         }
-//                                     }); 
-//                                 }   
-//                             });
-
-//                         }
-
-//                     }
-//                 }
-               
-//             });
-//         }
-//     });
-// }
-
+/**
+ * KHPP
+ */
 exports.writeToKHPP = (req, res, next) => {
 
     // console.log(req.body);
@@ -427,7 +260,9 @@ exports.writeToKHPP = (req, res, next) => {
 
 
 }
-
+/**
+ * KHPP
+ */
 exports.readFromKHPP = (req, res, next) => {
 
     const query = `select f.id, f.tagNumber, f.dueDate, f.processedBy, (select count(*) from egypt.khpptriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.khppbodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.khppform f order by id desc;`;
@@ -448,7 +283,9 @@ exports.readFromKHPP = (req, res, next) => {
         }   
     });
 };
-
+/**
+ * KHPP
+ */
 exports.editFromKHPP = (req, res, next) => {
     const formId = req.body.formId;
     const type = req.body.type;
@@ -471,7 +308,9 @@ exports.editFromKHPP = (req, res, next) => {
         }   
     });
 }
-
+/**
+ * KHPP
+ */
 exports.updateFromKHPP = (req, res, next) => {
     // console.log(req.body);
     const form = req.body.form;
@@ -606,7 +445,9 @@ exports.updateFromKHPP = (req, res, next) => {
 
 
 }
-
+/**
+ * KHPP
+ */
 exports.deleteFromKHPP = (req, res, next) => {
 
     // Delete from khppbodysherds table
@@ -656,6 +497,419 @@ exports.deleteFromKHPP = (req, res, next) => {
 
 }
 
+
+/**
+ * Elephantine
+ */
+exports.writeToElephantine = (req, res, next) => {
+
+    // console.log(req.body);
+    const form = req.body.form;
+    const sherdsArr = req.body.sherds;
+    const triageArr = req.body.triage;
+    
+    const formQuery = `INSERT INTO egypt.eleform (tagNumber,dueDate, depositDate, processedBy) VALUES ("${form.tagNumber}","${form.dueDate}", "${form.depositDate}", "${form.processedBy}");`;
+
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+
+            // check to see if the tagNumber is already in the KHPP Form table, if so use that and insert the sherdsArray or triage array
+            const getTagNumberQuery = `select id from eleform where tagNumber = "${form.tagNumber}";`
+
+            pool.query(getTagNumberQuery, (_error, _response) => {
+                if (_response) {
+                    if (_response.length !== 0) {
+                        // OLD
+                        let oldFormId = _response[0].id;
+                        pool.query(formQuery, (err, response, fields) => {
+                            // Success
+                            if (response) {
+                                // console.log(response);
+                                let formId = oldFormId
+                                // // TRIAGE
+                    
+                                // Insert on bOdy
+                                const triageQueryArr = triageArr.map(triage => {
+                                    return `INSERT INTO egypt.eletriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", 
+                                    "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
+                                });
+                                for (let i = 0; i < triageQueryArr.length; i++) {
+                                    const singleTriageQuery = triageQueryArr[i];
+                                    pool.query(singleTriageQuery, (err, response, fields) => {
+                                        if (response) {
+                                            // console.log("HOOOOOYYYY")
+                                        }
+                                        if (err) {
+                                            // console.log("OH NOOOO!!")
+                                        }
+                                    });
+                                }
+                    
+                                if (sherdsArr.length !== 0) {
+                                    const sherdsQueryArr = sherdsArr.map(sherds => {
+                                        return `INSERT INTO 
+                                        egypt.khppbodysherds(formid, fabricType, surfaceTreatment, count, 
+                                            weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                            diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate) 
+                                            VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                            "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                            "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                            "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                            "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                            "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                            "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}");`;
+                                    });
+                                    for (let j = 0; j < sherdsQueryArr.length; j++) {
+                                        const singleSherdQuery = sherdsQueryArr[j];
+                                        pool.query(singleSherdQuery, (err, response, fields) => {
+                                            if (response) {
+                                                // console.log("YESSS")
+                                            }
+                                            if (err) {
+                                                // console.log(err)
+                                            }
+                                        });
+                                    }
+                                }
+                                conn.release();
+                                console.log('CONNECTION RELEASED writeToKHPP');
+                    
+                                res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+                    
+                            }
+                            if (err) {
+                                res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
+                            }
+                        }); 
+                    } else {
+                        //NEW 
+                        pool.query(formQuery, (err, response, fields) => {
+                            // Success
+                            if (response) {
+                                // console.log(response);
+                                const formId = response.insertId;
+                                // // TRIAGE
+                    
+                                // Insert on bOdy
+                                const triageQueryArr = triageArr.map(triage => {
+                                    return `INSERT INTO egypt.eletriage (formId, fabricType, bodyOrDiagnostic, count, weight, weightType, comments, notes,sherdType) VALUES ("${formId}", 
+                                    "${triage.fabricType}", "${triage.bodyOrDiagnostic}", "${triage.count}", "${triage.weight}", "${triage.weightType}", "${triage.comments}", "${triage.notes}", "${triage.sherdType}");`;
+                                });
+                                for (let i = 0; i < triageQueryArr.length; i++) {
+                                    const singleTriageQuery = triageQueryArr[i];
+                                    pool.query(singleTriageQuery, (err, response, fields) => {
+                                        if (response) {
+                                            // console.log("HOOOOOYYYY")
+                                        }
+                                        if (err) {
+                                            // console.log("OH NOOOO!!")
+                                        }
+                                    });
+                                }
+                    
+                                if (sherdsArr.length !== 0) {
+                                    const sherdsQueryArr = sherdsArr.map(sherds => {
+                                        return `INSERT INTO 
+                                        egypt.elebodysherds(formid, fabricType, surfaceTreatment, count, 
+                                            weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                            diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                            sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate) 
+                                            VALUES ("${formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                            "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                            "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                            "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                            "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                            "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                            "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                            "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}");`;
+                                    });
+                                    for (let j = 0; j < sherdsQueryArr.length; j++) {
+                                        const singleSherdQuery = sherdsQueryArr[j];
+                                        pool.query(singleSherdQuery, (err, response, fields) => {
+                                            if (response) {
+                                                // console.log("YESSS")
+                                            }
+                                            if (err) {
+                                                // console.log(err)
+                                            }
+                                        });
+                                    }
+                                }
+                                conn.release();
+                                console.log('CONNECTION RELEASED writeToKHPP');
+                    
+                                res.send({ status: 201, okPacket: response, message: 'INSERTS OKAY' });
+                    
+                            }
+                            if (err) {
+                                res.send({ status: 999, okPacket: response, message: 'ERROR IN INSERT ON FORM QUERY', query: formQuery });
+                            }
+                        }); 
+                    }
+                } else {
+                    res.send({error: _error})
+                }
+
+            });
+
+
+
+        }   
+    });
+
+
+
+
+}
+/**
+ * Elephantine
+ */
+exports.readFromElephantine = (req, res, next) => {
+
+    const query = `select f.id, f.tagNumber, f.dueDate, f.processedBy, (select count(*) from egypt.eletriage t where t.formid = f.id) as 'basicCount' , (select count(*) from egypt.elebodysherds b where b.formId = f.id ) as 'detailedCount' from egypt.eleform f order by id desc;`;
+
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(query, (err, response, fields) => {
+                conn.release();
+                if (response) {
+                    res.send(response);
+                }
+            });
+        }   
+    });
+};
+/**
+ * Elephantine
+ */
+exports.editFromElephantine = (req, res, next) => {
+    const formId = req.body.formId;
+    const type = req.body.type;
+    const query = type === 'detailed' ? `SELECT * FROM egypt.elebodysherds where formId = ${formId};` : `SELECT * FROM egypt.eletriage where formId = ${formId};`
+
+    
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(query, (queryError, response, fields) => {
+                conn.release();
+                if (!queryError) {
+                    res.send({formId: formId, records: response});
+                }
+            });
+        }   
+    });
+}
+/**
+ * Elephantine
+ */
+exports.updateFromElephantine = (req, res, next) => {
+    // console.log(req.body);
+    const form = req.body.form;
+    const sherdsArr = req.body.sherds;
+    const triageArr = req.body.triage;
+    const type = req.body.type;
+    const toDelete = req.body.toDelete;
+    const toAdd = req.body.toAdd;
+
+    const updateFormQuery = `UPDATE egypt.eleform SET tagNumber = '${form.tagNumber}', dueDate = '${form.dueDate}', processedBy = '${form.processedBy}', sherdDate = '${form.sherdDate}'  WHERE (id = '${form.formId}');`;
+
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(updateFormQuery, (err, response, fields) => {
+
+                if (err) {
+                    /**
+                     * Throw Error
+                     */
+                } else {
+        
+        
+                    // Check Type if Detailed or Basic
+                    if (type === 'detailed') {
+        
+                        // Delete Detailed Records
+                        if (toDelete.length !== 0 || toDelete !== null) {
+                            const deleteQueryArr = toDelete.map(ele => {
+                                if (ele.id == null) {
+                                    return '';
+                                } else {
+                                    return `DELETE from egypt.elebodysherds WHERE (id = '${ele.id}');`;
+                                }
+        
+                            });
+        
+                            for (let i = 0; i < deleteQueryArr.length; i++) {
+                                const eachRecordToDelete = deleteQueryArr[i];
+        
+                                if (eachRecordToDelete !== '') {
+                                    pool.query(eachRecordToDelete, (err, response, fields) => {
+                                        if (err) {
+                                            // Error in deleting
+                                        } else {
+                                            // Success in deleting
+                                        }
+                                    });
+                                }
+                            }
+                        }
+        
+                        // Update, check to see if the detailed shers array is empty
+                        if (sherdsArr.length !== 0 || sherdsArr !== null) {
+                            const sherdUpdateQueryArr = sherdsArr.map(ele => {
+                                if (ele.id == null) {
+                                    return '';
+                                } else {
+                                    return `UPDATE egypt.elebodysherds SET fabricType = '${ele.fabricType}', surfaceTreatment = '${ele.surfaceTreatment}', count = '${ele.count}', weight = '${ele.weight}', weightType = '${ele.weightType}', notes = '${ele.notes}', bodyOrDiagnostic = '${ele.bodyOrDiagnostic}', ware = '${ele.ware}', decoration = '${ele.decoration}', diameter = '${ele.diameter}', blackening = '${ele.blackening}', objectNumber = '${ele.objectNumber}', percentage = '${ele.percentage}', hasPhoto = '${ele.hasPhoto}', rimsTstc =  '${ele.rimsTstc}', sheetNumber = '${ele.sheetNumber}', typeDescription = '${ele.typeDescription}', typeFamily = '${ele.typeFamily}', typeNumber = '${ele.typeNumber}', typeVariant = '${ele.typeVariant}', isDrawn = '${ele.isDrawn}', burnishing = '${ele.burnishing}', sherdDate = '${ele.sherdDate}' WHERE (id = '${ele.id}');`;
+                                }
+                            });
+        
+                            for (let k = 0; k < sherdUpdateQueryArr.length; k++) {
+                                const eachUpdate = sherdUpdateQueryArr[k];
+                                // console.log(eachUpdate);
+                                if (eachUpdate !== '') {
+                                    pool.query(eachUpdate, (err, response, fields) => {
+                                        if (err) {
+                                            // error
+                                        } else {
+                                            // success;
+                                        }
+                                    });
+                                }
+                            }
+        
+                            res.send({response: sherdUpdateQueryArr});
+                   
+                        }
+        
+                        // Insert
+                        if (toAdd !== 0 || toAdd !== null) {
+                            const sherdsQueryArr = toAdd.map(sherds => {
+                                return `INSERT INTO 
+                                egypt.elebodysherds(formid, fabricType, surfaceTreatment, count, 
+                                    weight, weightType, notes, bodyOrDiagnostic, ware, decoration, 
+                                    diameter, blackening, objectNumber, percentage, hasPhoto, rimsTstc, 
+                                    sheetNumber, typeDescription, typeFamily, typeNumber, typeVariant, isDrawn, burnishing, sherdDate) 
+                                    VALUES ("${form.formId}", "${sherds.fabricType}", "${sherds.surfaceTreatment}", 
+                                    "${sherds.count}", "${sherds.weight}", "${sherds.weightType}", 
+                                    "${sherds.notes}", "${sherds.bodyOrDiagnostic}", "${sherds.ware}", 
+                                    "${sherds.decoration}", "${sherds.diameter}", "${sherds.blackening}", 
+                                    "${sherds.objectNumber}", "${sherds.percentage}", "${sherds.hasPhoto}", 
+                                    "${sherds.rimsTstc}", "${sherds.sheetNumber}", "${sherds.typeDescription}", 
+                                    "${sherds.typeFamily}", "${sherds.typeNumber}", 
+                                    "${sherds.typeVariant}", "${sherds.isDrawn}", "${sherds.burnishing}", "${sherds.sherdDate}");`;
+                            });
+        
+                            for (let w = 0; w < sherdsQueryArr.length; w++) {
+                                const element = sherdsQueryArr[w];
+        
+                                pool.query(element, (err, res, fields) => {
+                                    if (err) {
+                                        // error
+                                    } else {
+                                        // success
+                                    }
+                                });
+                                
+                            }
+                        }
+
+                        conn.release();
+        
+           
+        
+                    } 
+        
+                    if (type === 'basic') {
+        
+                    }
+                }
+        
+            });
+        }   
+    });
+
+
+
+}
+/**
+ * Elephantine
+ */
+exports.deleteFromElephantine = (req, res, next) => {
+
+    // Delete from khppbodysherds table
+    // Delete from khpptriage table
+    // Delete from khppform
+
+    const formId = req.body.formId;
+
+    const deleteAllBodySherdsQuery = `delete from egypt.elebodysherds where formId = ${formId};`;
+    const deleteAllTriageQuery = `delete from egypt.eletriage where formId = ${formId};`;
+    const deleteForm = `delete from egypt.eleform where id = ${formId}`;
+
+    // res.send({sherdsQuery: deleteAllBodySherdsQuery, triageQuery: deleteAllTriageQuery, formQuery: deleteForm});
+
+    pool.getConnection((connectionError, conn) => {
+        if (connectionError) {
+            if (connectionError instanceof Errors.NotFound) {
+                return res.status(HttpStatus.NOT_FOUND).send({message: connectionError.message}); 
+            }
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ error: err, message: err.message }); // 500
+        } else {
+            pool.query(deleteAllBodySherdsQuery, (err, response, fields) => {
+                if (response) {
+                    // console.log(response);
+                    pool.query(deleteAllTriageQuery, (err, response, fields) => {
+                        if (response) {
+                            //delete form
+                            pool.query(deleteForm, (err, response, fields) => {
+                                conn.release();
+                                if (response) {
+                                    res.send({ status: 201, okPacket: response, message: 'DELETE OKAY' });
+                                } else if (err) {
+                                    res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                                }
+                            });
+                        } else if (err) {
+                            res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                        }
+                    });
+                } else if (err) {
+                     res.send({ status: 999, okPacket: response, message: 'ERROR IN DELETE' });
+                }
+            });
+        }   
+    });
+
+
+}
+
+
+
+/**
+ * Local utilities function
+ */
 function convertFilterList(arrayList) {
     return "'" + arrayList.join("\', \'") + "' ";
 }

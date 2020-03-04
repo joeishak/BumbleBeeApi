@@ -39,13 +39,19 @@ module.exports = function (app) {
        app.post('/test', healthy.postRequestTest)
 
        // Forms
-       app.post('/write/elephant', forms.writeElephantForms)
+       // app.post('/write/elephant', forms.writeElephantForms)
        app.post('/write/khpp', forms.writeToKHPP);
        app.get('/read/khpp', forms.readFromKHPP);
        app.post('/delete/khpp', forms.deleteFromKHPP);
        app.post('/edit/khpp', forms.editFromKHPP);
        app.post('/update/khpp', forms.updateFromKHPP);
-       // app.post('/special', forms.sepcialWriteToKhpp);
+     
+       // Elephantine Forms
+       app.post('/write/elephantine', forms.writeToElephantine);
+       app.get('/read/elephantine', forms.readFromElephantine);
+       app.post('/delete/elephantine', forms.deleteFromElephantine);
+       app.post('/edit/elephantine', forms.editFromElephantine);
+       app.post('/update/elephantine', forms.updateFromElephantine);
 
        //New Queries For Thursday***
        app.post('/dash/khpp/fabric',dashboard.getKHPPFabricQuery);
